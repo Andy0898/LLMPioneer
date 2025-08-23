@@ -1,0 +1,82 @@
+from typing import List
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.ext.asyncio import AsyncSession  # 修改这里
+from app.api.deps import get_db, get_current_active_user
+from app.db.models import UserModel
+from app.schemas.llm_configuration import (
+    LlmConfigurationCreate,
+    LlmConfigurationResponse,
+    LlmConfigurationUpdate
+)
+from app.services.llm_configuration_service import LlmConfigurationService
+from config import settings
+
+router = APIRouter()
+
+@router.get("/llm/list", response_model=List[LlmConfigurationResponse])
+async def get_llm_list(
+    skip: int = 0,
+    limit: int = 100,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(get_current_active_user)
+):
+    """获取可用的LLM列表"""
+    llm_configs = await LlmConfigurationService.get_multi(db=db, skip=skip, limit=limit)
+    return llm_configs
+
+@router.post("/llm", response_model=LlmConfigurationResponse)
+async def create_llm_config(
+    *,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(get_current_active_user),
+    llm_config_in: LlmConfigurationCreate
+):
+    """创建新的LLM配置"""
+    # 检查是否有管理员权限
+    if not current_user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    # 检查英文名是否已存在
+    existing_config = await LlmConfigurationService.get_by_en_name(
+        db=db, llm_en_name=llm_config_in.llm_en_name
+    )
+    if existing_config:
+        raise HTTPException(status_code=400, detail="LLM configuration with this name already exists")
+    
+    llm_config_in.create_by = current_user["username"]
+    llm_config = await LlmConfigurationService.create(db=db, obj_in=llm_config_in)
+    return llm_config
+
+@router.put("/llm/{llm_id}", response_model=LlmConfigurationResponse)
+async def update_llm_config(
+    *,
+    db: AsyncSession = Depends(get_db),
+    current_user: UserModel = Depends(get_current_active_user),
+    llm_id: int,
+    llm_config_in: LlmConfigurationUpdate
+):
+    """更新LLM配置"""
+    # 检查是否有管理员权限
+    if not current_user.get("is_admin"):
+        raise HTTPException(status_code=403, detail="Not enough permissions")
+    
+    llm_config = await LlmConfigurationService.get(db=db, id=llm_id)
+    if not llm_config:
+        raise HTTPException(status_code=404, detail="LLM configuration not found")
+    
+    # 如果更新了英文名，检查是否与其他配置冲突
+    if llm_config_in.llm_en_name and llm_config_in.llm_en_name != llm_config.llm_en_name:
+        existing_config = await LlmConfigurationService.get_by_en_name(
+            db=db, llm_en_name=llm_config_in.llm_en_name
+        )
+        if existing_config:
+            raise HTTPException(
+                status_code=400,
+                detail="LLM configuration with this name already exists"
+            )
+    
+    llm_config_in.update_by = current_user["username"]
+    llm_config = await LlmConfigurationService.update(
+        db=db, db_obj=llm_config, obj_in=llm_config_in
+    )
+    return llm_config
