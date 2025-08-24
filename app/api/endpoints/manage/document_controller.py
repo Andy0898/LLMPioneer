@@ -17,7 +17,7 @@ from app.schemas.document import (
 )
 from app.services.document_service import DocumentService
 
-router = APIRouter()
+router = APIRouter(dependencies=[Depends(deps.get_redis)])
 
 @router.post("/document/upload", response_model=List[DocumentInDB])
 async def upload_enterprise_documents(

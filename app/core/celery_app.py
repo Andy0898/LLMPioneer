@@ -33,18 +33,5 @@ celery_app.conf.update(
 # 修改任务发现方式
 # celery_app.autodiscover_tasks(['app'])  # 扫描整个app目录
 
-# 在 celery_app.py 中添加 Redis 连接测试
-import redis
-
-# 测试 Redis 连接
-try:
-    redis_client = redis.Redis(
-        host=settings.REDIS_HOST,
-        port=settings.REDIS_PORT,
-        db=settings.REDIS_DB
-    )
-    redis_client.ping()
-    logger.info("Redis connection successful")
-except Exception as e:
-    logger.error(f"Redis connection failed: {e}")
-    raise
+# if __name__ == '__main__':
+#     celery_app.start()

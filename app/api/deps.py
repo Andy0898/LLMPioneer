@@ -92,4 +92,31 @@ def require_permissions(required_permissions: List[str]):
             )
         return current_user
     
-    return permission_dependency 
+    return permission_dependency
+
+import redis
+from config.settings import settings
+from config.logger import get_logger
+
+logger = get_logger(__name__)
+
+def get_redis():
+    """
+    Dependency to check Redis connection and return a client.
+    Raises HTTPException if connection fails.
+    """
+    try:
+        redis_client = redis.Redis(
+            host=settings.REDIS_HOST,
+            port=settings.REDIS_PORT,
+            db=settings.REDIS_DB,
+            socket_connect_timeout=1,  # Set a timeout to avoid long waits
+        )
+        redis_client.ping()
+        yield redis_client
+    except redis.exceptions.ConnectionError as e:
+        logger.error(f"Redis connection failed: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Redis service is unavailable."
+        ) 

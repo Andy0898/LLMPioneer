@@ -1,4 +1,4 @@
-# SA-Plus
+# LLM Pioneer
 
 基于Python 3.10版本，创建FastAPI + SQLAlchemy的智能助理系统，提供大模型的问答聊天服务，并利用大模型的推理生成能力，帮助用户生成和优化产业投资分析报告。
 
@@ -14,7 +14,7 @@
 ## 项目结构
 
 ```
-sa-plus/
+LLMPioneer/
 ├── app/                    # 核心代码目录
 │   ├── api/               # 路由层
 │   ├── core/              # 核心逻辑
@@ -32,7 +32,7 @@ sa-plus/
 1. 克隆项目
 ```bash
 git clone <repository-url>
-cd sa-plus
+cd LLMPioneer
 ```
 
 2. 创建虚拟环境

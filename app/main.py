@@ -58,13 +58,13 @@ def create_application() -> FastAPI:
         )
 
     # 注册路由
-    app.include_router(auth_router, prefix="/auth", tags=["认证接口"])
-    app.include_router(manage_router, prefix="/manage", tags=["管理接口"])
-    app.include_router(sa_router, prefix="/sa", tags=["用户接口"])
+    app.include_router(auth_router, prefix="/auth", tags=["用户认证接口"])
+    app.include_router(manage_router, prefix="/manage", tags=["后台管理接口"])
+    app.include_router(sa_router, prefix="/sa", tags=["前端应用接口"])
     
     @app.get("/")
     async def root():
-        return {"message": "Welcome to SA-Plus API"}
+        return {"message": "Welcome to LLM Pioneer API"}
 
     return app
 

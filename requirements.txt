@@ -1,0 +1,2 @@
+# Point to the development requirements file
+-r requirements/dev.txt

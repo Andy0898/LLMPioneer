@@ -10,7 +10,7 @@ load_dotenv()
 
 class Settings(BaseSettings):
     # 项目基础配置
-    PROJECT_NAME: str = os.getenv("PROJECT_NAME", "sa-plus")
+    PROJECT_NAME: str = os.getenv("PROJECT_NAME", "LLMPioneer")
     VERSION: str = os.getenv("VERSION", "1.0.0")
     API_V1_STR: str = os.getenv("API_V1_STR", "/api/v1")
     DEBUG: bool = os.getenv("DEBUG", "True").lower() == "true"
