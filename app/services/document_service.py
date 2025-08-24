@@ -7,11 +7,11 @@ from datetime import datetime
 from app.db.models.document_info import DocumentInfo
 from app.db.models.document_settings import DocumentSettings
 from app.schemas.document import DocumentCreate, DocumentUpdate, DocumentSettingsCreate
-from config.settings import settings
+from app.config.settings import settings
 from app.core.rag.document_processor import DocumentProcessor
 from app.core.rag.document_splitter import ChunkConfig
 
-from config.logger import get_logger
+from app.config.logger import get_logger
 logger = get_logger(__name__)
 
 class DocumentService:

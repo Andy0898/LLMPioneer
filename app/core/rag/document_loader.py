@@ -1,6 +1,6 @@
 from typing import Dict, Any
 from pathlib import Path
-from config.logger import get_logger
+from app.config.logger import get_logger
 from langchain_community.document_loaders import (
     PyPDFLoader,
     Docx2txtLoader,

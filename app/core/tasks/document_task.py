@@ -2,10 +2,10 @@ from typing import Dict, Any
 import asyncio
 from celery import Task
 from app.core.celery_app import celery_app
-from app.api.deps import get_db
+from app.api.v1.deps import get_db
 from app.db.session import AsyncSessionLocal
 from app.services.document_service import DocumentService
-from config.logger import get_logger
+from app.config.logger import get_logger
 
 log = get_logger(__name__)
 

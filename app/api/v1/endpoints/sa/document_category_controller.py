@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api import deps
+from app.api.v1 import deps
 from app.db.models.user import UserModel
 from app.schemas.document_category import (
     DocumentCategoryCreate,

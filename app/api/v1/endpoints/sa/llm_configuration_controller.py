@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession  # 修改这里
-from app.api.deps import get_db, get_current_active_user
+from app.api.v1.deps import get_db, get_current_active_user
 from app.db.models import UserModel
 from app.schemas.llm_configuration import (
     LlmConfigurationCreate,
@@ -9,7 +9,7 @@ from app.schemas.llm_configuration import (
     LlmConfigurationUpdate
 )
 from app.services.llm_configuration_service import LlmConfigurationService
-from config import settings
+from app.config import settings
 
 router = APIRouter()
 

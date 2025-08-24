@@ -1,7 +1,7 @@
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from config.settings import settings
+from app.config.settings import settings
 from sqlalchemy import text
 
 # 创建异步引擎

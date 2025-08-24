@@ -1,7 +1,7 @@
 from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import get_current_active_user
+from app.api.v1.deps import get_current_active_user
 from app.db.session import get_db
 from app.schemas.conversation import ConversationCreate, ConversationUpdate, ConversationResponse, ConversationList
 from app.schemas.message import MessageCreate

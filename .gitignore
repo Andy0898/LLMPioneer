@@ -139,3 +139,6 @@ dmypy.json
 cython_debug/
 requirements/english_sentence.txt
 *.bak
+
+# Cursor IDE
+.cursor/

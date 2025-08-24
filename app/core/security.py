@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 from typing import Optional, Union
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from config.settings import settings
+from app.config.settings import settings
 from functools import wraps
 from fastapi import HTTPException, status
 from app.services.role import RoleService

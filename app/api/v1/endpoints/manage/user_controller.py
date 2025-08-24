@@ -1,7 +1,7 @@
 from typing import List, Tuple
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.api.deps import (
+from app.api.v1.deps import (
     get_db,
     require_permissions
 )

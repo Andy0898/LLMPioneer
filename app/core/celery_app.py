@@ -1,7 +1,7 @@
 # app/core/celery_app.py
 from celery import Celery
-from config.settings import settings
-from config.logger import get_logger
+from app.config.settings import settings
+from app.config.logger import get_logger
 
 logger = get_logger(__name__)
 

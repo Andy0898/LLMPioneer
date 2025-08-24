@@ -1,7 +1,7 @@
 from typing import List, Dict, Any
 
 import torch
-from config.logger import get_logger
+from app.config.logger import get_logger
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.schema import Document
 

@@ -2,7 +2,7 @@ from typing import Dict, Any, Optional, List
 from pathlib import Path
 import logging
 from app.core.milvus import MilvusClient
-from config.logger import get_logger
+from app.config.logger import get_logger
 from .document_loader import DocumentLoader
 from .document_splitter import DocumentSplitter, ChunkConfig
 from .document_embedder import DocumentEmbedder

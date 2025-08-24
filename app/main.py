@@ -8,11 +8,11 @@ sys.path.append(str(ROOT_DIR))
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from config.settings import settings
-from app.api.endpoints.manage import router as manage_router
-from app.api.endpoints.sa import router as sa_router
+from app.config.settings import settings
+from app.api.v1.endpoints.manage import router as manage_router
+from app.api.v1.endpoints.sa import router as sa_router
 from app.db.session import test_db_connection
-from app.api.endpoints.auth_controller import router as auth_router
+from app.api.v1.endpoints.auth_controller import router as auth_router
 
 
 def create_application() -> FastAPI:

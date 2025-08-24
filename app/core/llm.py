@@ -13,7 +13,7 @@ from langchain.prompts import PromptTemplate
 from langchain.schema import HumanMessage, AIMessage, SystemMessage
 from app.db.models.message import MessageModel
 from app.db.models.llm_configuration import LlmConfigurationModel
-from config.logger import get_logger
+from app.config.logger import get_logger
 import asyncio
 
 log = get_logger(__name__)

@@ -7,10 +7,10 @@ from pymilvus import (
     DataType,
     utility
 )
-from config import settings
+from app.config import settings
 import signal
 import sys
-from config.logger import get_logger
+from app.config.logger import get_logger
 
 logger = get_logger(__name__)
 
