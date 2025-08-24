@@ -1,9 +1,9 @@
 from .base import Base, TimestampMixin, OperatorMixin
-from .user import UserModel
+from .user import UserModel, UserRoleModel
 from .conversation import ConversationModel
 from .message import MessageModel
 from .llm_configuration import LlmConfigurationModel
-from .role import RoleModel, FunctionPermissionModel
+from .role import RoleModel, FunctionPermissionModel, RolePermissionModel
 from .document_category import DocumentCategory
 from .document_info import DocumentInfo
 from .document_settings import DocumentSettings
@@ -14,7 +14,9 @@ __all__ = [
     "OperatorMixin",
     "RoleModel",
     "UserModel",
+    "UserRoleModel",
     "FunctionPermissionModel",
+    "RolePermissionModel",
     "ConversationModel",
     "MessageModel",
     "LlmConfigurationModel",    

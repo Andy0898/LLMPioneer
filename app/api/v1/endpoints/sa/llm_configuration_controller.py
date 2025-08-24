@@ -2,7 +2,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession  # 修改这里
 from app.api.v1.deps import get_db, get_current_active_user
-from app.db.models import UserModel
+from app.db.models.user import UserModel
 from app.schemas.llm_configuration import (
     LlmConfigurationCreate,
     LlmConfigurationResponse,

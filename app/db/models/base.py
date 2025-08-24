@@ -1,15 +1,16 @@
+from __future__ import annotations
 from datetime import datetime, timezone
-from typing import Any
-from sqlalchemy.ext.declarative import declared_attr
-from sqlalchemy.orm import DeclarativeBase
-from sqlalchemy import Column, DateTime, String
+from typing import Optional
+from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
+from sqlalchemy import DateTime, String
+from sqlalchemy.orm import declared_attr
 
 class Base(DeclarativeBase):
     """
     基础模型类，所有模型都应该继承这个类
     """
-    id: Any
-    __name__: str
+    # 移除 id 字段，让子类自己定义
+    # 移除 __name__ 字段，这不是数据库字段
     
     # 生成表名
     @declared_attr
@@ -26,12 +27,12 @@ class TimestampMixin:
     """
     时间戳Mixin，包含创建时间和更新时间
     """
-    create_time = Column(DateTime, nullable=False, default=datetime.now(timezone.utc), comment='创建时间')
-    update_time = Column(DateTime, nullable=True, onupdate=datetime.now(timezone.utc), comment='更新时间')
+    create_time: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=lambda: datetime.now(timezone.utc), comment='创建时间')
+    update_time: Mapped[Optional[datetime]] = mapped_column(DateTime, nullable=True, onupdate=lambda: datetime.now(timezone.utc), comment='更新时间')
 
 class OperatorMixin:
     """
     操作者Mixin，包含创建人和更新人
     """
-    create_by = Column(String(100), nullable=False, comment='创建人')
-    update_by = Column(String(100), nullable=True, comment='更新人') 
+    create_by: Mapped[str] = mapped_column(String(100), nullable=False, comment='创建人')
+    update_by: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, comment='更新人')

@@ -1,6 +1,0 @@
-# 文档处理相关依赖
-pypdf>=3.0.0
-python-docx>=0.8.11
-markdown>=3.4.0
-sentence-transformers>=2.2.0
-pymilvus>=2.3.0 

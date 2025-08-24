@@ -1,12 +1,55 @@
 # Core application dependencies
-fastapi
-uvicorn[standard]
-sqlalchemy[asyncio]
-asyncpg
-pydantic
-pydantic-settings
-celery
-redis
-python-jose[cryptography]
-passlib[bcrypt]
-python-multipart
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+sqlalchemy[asyncio]>=2.0.0
+asyncpg>=0.29.0
+aiomysql>=0.2.0
+pydantic>=2.5.0
+pydantic-settings>=2.1.0
+celery>=5.3.0
+redis>=5.0.0
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+python-multipart>=0.0.6
+
+# Database and ORM
+alembic>=1.13.0
+aiomysql>=0.2.0
+
+# Environment and configuration
+python-dotenv>=1.0.0
+
+# HTTP and async
+aiofiles>=23.2.0
+
+# Security and authentication
+bcrypt>=4.1.0
+cryptography>=41.0.0
+
+# File handling and uploads
+python-multipart>=0.0.6
+aiofiles>=23.2.0
+
+# Logging and monitoring
+structlog>=23.2.0
+
+# LLM and AI related
+langchain>=0.1.0
+langchain-community>=0.0.10
+langchain-deepseek>=0.0.1
+xinference>=0.5.0
+pymilvus>=2.3.0
+
+# Vector database and embeddings
+sentence-transformers>=2.2.0
+numpy>=1.24.0
+
+# Document processing
+pypdf>=3.17.0
+python-docx>=1.1.0
+openpyxl>=3.1.0
+Pillow>=10.0.0
+
+# Utilities
+typer>=0.9.0
+rich>=13.7.0

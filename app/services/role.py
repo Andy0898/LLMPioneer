@@ -2,7 +2,7 @@
 from typing import List, Optional, Tuple
 from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
-from app.db.models.role import RoleModel, FunctionPermissionModel, RoleFunctionPermissionModel, UserRoleModel
+from app.db.models import UserRoleModel, RoleModel, FunctionPermissionModel, RolePermissionModel
 from app.schemas.role import RoleCreate, RoleUpdate, FunctionPermissionCreate, FunctionPermissionUpdate
 
 class RoleService:
@@ -82,8 +82,8 @@ class RoleService:
         """获取角色的所有权限"""
         result = await self.db.execute(
             select(FunctionPermissionModel)
-            .join(RoleFunctionPermissionModel)
-            .where(RoleFunctionPermissionModel.role_id == role_id)
+            .join(RolePermissionModel)
+            .where(RolePermissionModel.role_id == role_id)
         )
         return result.scalars().all()
 
@@ -154,14 +154,14 @@ class FunctionPermissionService:
         """为角色分配权限"""
         # 先删除原有的权限
         await self.db.execute(
-            RoleFunctionPermissionModel.__table__.delete().where(
-                RoleFunctionPermissionModel.role_id == role_id
+            RolePermissionModel.__table__.delete().where(
+                RolePermissionModel.role_id == role_id
             )
         )
         
         # 添加新的权限
         for permission_id in permission_ids:
-            self.db.add(RoleFunctionPermissionModel(
+            self.db.add(RolePermissionModel(
                 role_id=role_id,
                 func_per_id=permission_id
             ))

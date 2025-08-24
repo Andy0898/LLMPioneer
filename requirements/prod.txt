@@ -1,5 +1,9 @@
 # Include base requirements
 -r base.txt
 
-# Production-specific dependencies (if any)
-# gunicorn
+# Production-specific dependencies
+gunicorn>=21.2.0
+uvicorn[standard]>=0.24.0
+
+# Monitoring and logging (production)
+structlog>=23.2.0

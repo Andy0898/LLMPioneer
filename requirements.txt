@@ -1,2 +1,3 @@
-# Point to the development requirements file
+# Development environment requirements
+# For development, testing, and local setup
 -r requirements/dev.txt

@@ -1,53 +1,67 @@
-import sys
-from pathlib import Path
+# import sys
+# from pathlib import Path
 
 # 将项目根目录添加到 Python 路径
-ROOT_DIR = Path(__file__).resolve().parent.parent
-sys.path.append(str(ROOT_DIR))
+# ROOT_DIR = Path(__file__).resolve().parent.parent
+# sys.path.append(str(ROOT_DIR))
 
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from app.config.settings import settings
 from app.api.v1.endpoints.manage import router as manage_router
 from app.api.v1.endpoints.sa import router as sa_router
-from app.db.session import test_db_connection
 from app.api.v1.endpoints.auth_controller import router as auth_router
+from app.db.session import test_db_connection
 
 
 def create_application() -> FastAPI:
     """
-    创建FastAPI应用
+    创建FastAPI应用实例
     """
-        # @app.on_event("startup")
-    # async def startup_event():
-    #     # 测试数据库连接
-    #     if await test_db_connection():
-    #         print("数据库连接成功！")
-    #     else:
-    #         print("警告：数据库连接失败！")
+    
     @asynccontextmanager
     async def lifespan(app: FastAPI):
+        """应用生命周期管理"""
         # 应用启动时执行
-        if await test_db_connection():
-            print("数据库连接成功！")
-        else:
-            print("警告：数据库连接失败！")
+        try:
+            if await test_db_connection():
+                print("✅ 数据库连接成功！")
+            else:
+                print("⚠️  警告：数据库连接失败！")
+        except Exception as e:
+            print(f"❌ 数据库连接测试失败: {e}")
         
-        # 通过 yield 语句将控制权交给应用主体
         yield
-
-        # 应用关闭时执行清理操作（如有需要）
-        # 例如：await cleanup_resources()
+        
+        # 应用关闭时执行清理操作
+        print("🔄 应用正在关闭，清理资源...")
     
+    # 创建FastAPI应用
     app = FastAPI(
-        lifespan=lifespan,
         title=settings.PROJECT_NAME,
         version=settings.VERSION,
-        openapi_url=f"{settings.API_V1_STR}/openapi.json"
+        description="LLM Pioneer - 智能助理系统API",
+        openapi_url=f"{settings.API_V1_STR}/openapi.json",
+        lifespan=lifespan,
+        docs_url="/docs",
+        redoc_url="/redoc"
     )
 
-    # 设置CORS
+    # 配置CORS中间件
+    _configure_cors(app)
+    
+    # 注册API路由
+    _register_routes(app)
+    
+    # 注册根路径
+    _register_root_endpoint(app)
+    
+    return app
+
+
+def _configure_cors(app: FastAPI) -> None:
+    """配置CORS中间件"""
     if settings.BACKEND_CORS_ORIGINS:
         app.add_middleware(
             CORSMiddleware,
@@ -57,19 +71,59 @@ def create_application() -> FastAPI:
             allow_headers=["*"],
         )
 
-    # 注册路由
-    app.include_router(auth_router, prefix="/auth", tags=["用户认证接口"])
-    app.include_router(manage_router, prefix="/manage", tags=["后台管理接口"])
-    app.include_router(sa_router, prefix="/sa", tags=["前端应用接口"])
+
+def _register_routes(app: FastAPI) -> None:
+    """注册API路由"""
+    api_router = APIRouter()
     
-    @app.get("/")
+    # 注册各个模块的路由
+    api_router.include_router(
+        auth_router, 
+        prefix="/auth", 
+        tags=["用户认证接口"]
+    )
+    api_router.include_router(
+        manage_router, 
+        prefix="/manage", 
+        tags=["后台管理接口"]
+    )
+    api_router.include_router(
+        sa_router, 
+        prefix="/sa", 
+        tags=["前端应用接口"]
+    )
+    
+    # 将聚合后的路由统一加上 /api/v1 前缀
+    app.include_router(api_router, prefix=settings.API_V1_STR)
+
+
+def _register_root_endpoint(app: FastAPI) -> None:
+    """注册根路径端点"""
+    @app.get("/", tags=["系统信息"])
     async def root():
-        return {"message": "Welcome to LLM Pioneer API"}
+        return {
+            "message": "Welcome to LLM Pioneer API",
+            "version": settings.VERSION,
+            "docs": "/docs",
+            "redoc": "/redoc"
+        }
 
-    return app
 
-app = create_application() 
+# 创建应用实例
+app = create_application()
+
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=18000) 
+    
+    # 从配置文件读取端口，而不是硬编码
+    port = getattr(settings, 'PORT', 18000)
+    host = getattr(settings, 'HOST', '127.0.0.1')
+    
+    uvicorn.run(
+        app, 
+        host=host, 
+        port=port,
+        reload=True,  # 开发环境启用热重载
+        log_level="info"
+    ) 

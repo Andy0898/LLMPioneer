@@ -6,7 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import selectinload
 from app.db.session import get_db
 from app.core.security import verify_token
-from app.db.models.user import UserModel
+from app.db.models import UserModel
 from app.services.role import RoleService
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="auth/login")

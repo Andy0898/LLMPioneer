@@ -17,7 +17,7 @@ class AuthService:
         """用户认证"""
         result = await self.db.execute(
             select(UserModel)
-            .options(selectinload(UserModel.roles))
+            .options(selectinload(UserModel.user_roles))
             .where(UserModel.user_name == username)
         )
         user = result.scalar_one_or_none()

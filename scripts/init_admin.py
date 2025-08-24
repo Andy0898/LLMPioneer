@@ -1,7 +1,7 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import get_password_hash
 from app.db.models.user import UserModel
-from app.db.models.role import RoleModel, FunctionPermissionModel, RoleFunctionPermissionModel, UserRoleModel
+from app.db.models.role import RoleModel, FunctionPermissionModel, RolePermissionModel, UserRoleModel
 from app.services.role import RoleService, FunctionPermissionService
 
 async def init_admin(db: AsyncSession):
@@ -51,7 +51,7 @@ async def init_admin(db: AsyncSession):
     
     # 3. 为超级管理员角色分配所有权限
     for perm in db_permissions:
-        db.add(RoleFunctionPermissionModel(
+        db.add(RolePermissionModel(
             role_id=admin_role.id,
             func_per_id=perm.id
         ))

@@ -2,8 +2,17 @@
 -r base.txt
 
 # Development-specific tools
-pytest
-pytest-asyncio
-httpx
-black
-flake8
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+pytest-cov>=4.1.0
+httpx>=0.25.0
+socksio>=1.0.0
+black>=23.0.0
+flake8>=6.0.0
+isort>=5.12.0
+mypy>=1.7.0
+
+# Testing and debugging
+pytest-mock>=3.12.0
+pytest-xdist>=3.3.0
+factory-boy>=3.3.0
