@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import get_password_hash
 from app.db.models.user import UserModel
 from app.db.models.role import RoleModel, FunctionPermissionModel, RolePermissionModel, UserRoleModel
-from app.services.role import RoleService, FunctionPermissionService
+from app.services.role_service import RoleService, FunctionPermissionService
 
 async def init_admin(db: AsyncSession):
     """初始化超级管理员用户和权限"""

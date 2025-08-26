@@ -7,7 +7,7 @@ from app.api.v1.deps import (
 )
 from app.db.models.user import UserModel
 from app.schemas.user import User, UserCreate, UserUpdate
-from app.services.user import UserService
+from app.services.user_service import UserService
 
 router = APIRouter()
 

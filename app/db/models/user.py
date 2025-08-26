@@ -28,6 +28,12 @@ class UserModel(Base, TimestampMixin, OperatorMixin):
     # 关系定义
     user_roles: Mapped[List["UserRoleModel"]] = relationship(back_populates="user", cascade="all, delete-orphan")
     roles: Mapped[List["RoleModel"]] = association_proxy("user_roles", "role")
+    # 关系定义 - 移除有问题的association_proxy
+    # user_roles: Mapped[List["UserRoleModel"]] = relationship(
+    #     back_populates="user", 
+    #     cascade="all, delete-orphan",
+    #     lazy="selectin"  # 使用selectin避免懒加载问题
+    # )
     conversations: Mapped[List["ConversationModel"]] = relationship(back_populates="user") # Corrected relationship
 
     __table_args__ = {'extend_existing': True}
@@ -40,11 +46,13 @@ class UserRoleModel(Base, TimestampMixin, OperatorMixin):
     user_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('t_sys_user.id'), primary_key=True, comment='用户ID')
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('t_sys_role.id'), primary_key=True, comment='角色ID')
     
-    assigned_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), comment='分配时间')
-    assigned_by: Mapped[str] = mapped_column(String(100), comment='分配人')
-    
     # 关系定义
     user: Mapped["UserModel"] = relationship("UserModel", back_populates="user_roles")
-    role: Mapped["RoleModel"] = relationship("RoleModel", back_populates="user_roles")
+    # role: Mapped["RoleModel"] = relationship("RoleModel", back_populates="user_roles")
+    role: Mapped["RoleModel"] = relationship(
+        "RoleModel", 
+        back_populates="user_roles",
+        lazy="selectin"  # 使用selectin避免懒加载问题
+    )
 
     __table_args__ = {'extend_existing': True}

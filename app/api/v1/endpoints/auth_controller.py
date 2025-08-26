@@ -6,7 +6,7 @@ from app.api.v1.deps import get_current_user
 from app.core.security import create_access_token
 from app.db.session import get_db
 from app.schemas.user import Token, PasswordUpdate
-from app.services.auth import AuthService
+from app.services.auth_service import AuthService
 from app.db.models.user import UserModel
 
 router = APIRouter()

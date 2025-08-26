@@ -1,4 +1,3 @@
-
 import pytest
 from httpx import AsyncClient
 from fastapi import status
@@ -40,13 +39,13 @@ async def test_login_success(client: AsyncClient):
     """
     # 模拟认证成功
     mock_auth_result = {
-        "access_token": "mock_access_token",
+        "access_token": "mock_access_token_from_test",
         "token_type": "bearer",
         "roles": [{"code": "admin", "name": "管理员"}],
         "permissions": ["read", "write"]
     }
 
-    with patch('app.services.auth.AuthService.authenticate', return_value=mock_auth_result):
+    with patch('app.services.auth_service.AuthService.authenticate', return_value=mock_auth_result):
         response = await client.post(
             "/api/v1/auth/login",
             data={"username": "admin", "password": "admin123"}

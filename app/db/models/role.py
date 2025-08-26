@@ -20,10 +20,21 @@ class RoleModel(Base, TimestampMixin, OperatorMixin):
     org_id: Mapped[Optional[int]] = mapped_column(BigInteger, comment='组织id')
     
     # 关系定义
-    user_roles: Mapped[List["UserRoleModel"]] = relationship(back_populates="role")
-    role_permissions: Mapped[List["RolePermissionModel"]] = relationship(back_populates="role", cascade="all, delete-orphan")
+    # user_roles: Mapped[List["UserRoleModel"]] = relationship(back_populates="role")
+    # role_permissions: Mapped[List["RolePermissionModel"]] = relationship(back_populates="role", cascade="all, delete-orphan")
+    # permissions: Mapped[List["FunctionPermissionModel"]] = association_proxy("role_permissions", "permission")
+    # 关系定义 - 移除有问题的association_proxy
+    user_roles: Mapped[List["UserRoleModel"]] = relationship(
+        back_populates="role",
+        lazy="selectin"  # 使用selectin避免懒加载问题
+    )
+    role_permissions: Mapped[List["RolePermissionModel"]] = relationship(
+        back_populates="role", 
+        cascade="all, delete-orphan",
+        lazy="selectin"  # 使用selectin避免懒加载问题
+    )
     permissions: Mapped[List["FunctionPermissionModel"]] = association_proxy("role_permissions", "permission")
-    
+
     __table_args__ = {'extend_existing': True}
 
 class FunctionPermissionModel(Base, TimestampMixin, OperatorMixin):
@@ -51,9 +62,14 @@ class FunctionPermissionModel(Base, TimestampMixin, OperatorMixin):
     status: Mapped[bool] = mapped_column(Boolean, default=True, comment='状态')
     
     # 关系定义
-    role_permissions: Mapped[List["RolePermissionModel"]] = relationship(back_populates="permission")
+    # role_permissions: Mapped[List["RolePermissionModel"]] = relationship(back_populates="permission")
+    # roles: Mapped[List["RoleModel"]] = association_proxy("role_permissions", "role")
+    # 关系定义 - 移除有问题的association_proxy
+    role_permissions: Mapped[List["RolePermissionModel"]] = relationship(
+        back_populates="permission",
+        lazy="selectin"  # 使用selectin避免懒加载问题
+    )
     roles: Mapped[List["RoleModel"]] = association_proxy("role_permissions", "role")
-    
     __table_args__ = {'extend_existing': True}
 
 # 2. 最后定义关联模型（引用其他模型的模型）
@@ -64,14 +80,12 @@ class RolePermissionModel(Base, TimestampMixin, OperatorMixin):
     role_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('t_sys_role.id'), primary_key=True, comment='角色ID')
     func_per_id: Mapped[int] = mapped_column(BigInteger, ForeignKey('t_sys_function_permission.id'), primary_key=True, comment='权限ID')
     
-    # 可以添加额外字段
-    assigned_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), comment='分配时间')
-    assigned_by: Mapped[str] = mapped_column(String(100), comment='分配人')
-    permission_level: Mapped[Optional[str]] = mapped_column(String(10), comment='权限级别：read, write, admin')
-    is_active: Mapped[bool] = mapped_column(Boolean, default=True, comment='是否激活')
-    
     # 关系定义
     role: Mapped["RoleModel"] = relationship("RoleModel", back_populates="role_permissions")
-    permission: Mapped["FunctionPermissionModel"] = relationship("FunctionPermissionModel", back_populates="role_permissions")
-    
+    # permission: Mapped["FunctionPermissionModel"] = relationship("FunctionPermissionModel", back_populates="role_permissions")
+    permission: Mapped["FunctionPermissionModel"] = relationship(
+        "FunctionPermissionModel", 
+        back_populates="role_permissions",
+        lazy="selectin"  # 使用selectin避免懒加载问题
+    )
     __table_args__ = {'extend_existing': True}

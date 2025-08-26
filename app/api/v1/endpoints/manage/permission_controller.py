@@ -4,7 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1.deps import get_current_user
 from app.db.session import get_db
 from app.schemas.role import FunctionPermission, FunctionPermissionCreate, FunctionPermissionUpdate
-from app.services.role import FunctionPermissionService
+from app.services.role_service import FunctionPermissionService
 from app.db.models.user import UserModel
 
 router = APIRouter()
