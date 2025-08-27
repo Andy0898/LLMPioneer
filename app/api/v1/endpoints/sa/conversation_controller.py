@@ -11,6 +11,9 @@ from app.services.llm_configuration_service import LlmConfigurationService
 from app.core.llm import get_llm_response
 from app.db.models.user import UserModel
 from pydantic import BaseModel
+from app.config.logger import get_logger # 导入日志
+
+logger = get_logger(__name__) # 获取Logger实例
 
 router = APIRouter()
 
@@ -27,9 +30,11 @@ async def create_conversation(
     """
     创建新会话
     """
+    logger.info(f"User {current_user.id} ({current_user.user_name}) attempting to create new conversation with title: {conversation_data.title}, LLM ID: {conversation_data.llm_id}.")
     # 1. 验证LLM配置是否存在且可用
     llm_config = await LlmConfigurationService.get(db=db, id=conversation_data.llm_id)
     if not llm_config or llm_config.status != 1:
+        logger.warning(f"Invalid or unavailable LLM configuration {conversation_data.llm_id} for user {current_user.id}.")
         raise HTTPException(status_code=400, detail="Invalid LLM configuration")
 
     # 2. 获取大模型响应
@@ -39,6 +44,7 @@ async def create_conversation(
         history_messages=[],  # 新对话没有历史消息
         llm_config=llm_config
     )
+    logger.debug(f"Initial LLM response for new conversation: {llm_response.get('content', '')[:50]}...")
 
     # 3. 创建会话记录
     conversation = await ConversationService.create(
@@ -49,6 +55,7 @@ async def create_conversation(
             create_by=current_user.user_name
         )
     )
+    logger.info(f"Conversation {conversation.id} created for user {current_user.id}.")
 
     # 4. 创建消息记录
     await MessageService.create(
@@ -62,8 +69,10 @@ async def create_conversation(
             create_by=current_user.user_name
         )
     )
+    logger.info(f"Initial message created for conversation {conversation.id}.")
 
     # 5. 返回创建的会话信息和大模型响应
+    logger.info(f"New conversation {conversation.id} with initial response returned to user {current_user.id}.")
     return {
         **conversation.__dict__,
         "initial_response": llm_response
@@ -79,6 +88,7 @@ async def get_conversations(
     """
     获取用户的会话列表
     """
+    logger.info(f"User {current_user.id} ({current_user.user_name}) requesting conversation list. Skip: {skip}, Limit: {limit}.")
     total = await ConversationService.get_total(db=db, user_id=current_user.id)
     conversations = await ConversationService.get_multi(
         db=db,
@@ -86,6 +96,7 @@ async def get_conversations(
         skip=skip,
         limit=limit
     )
+    logger.info(f"Returned {len(conversations)} conversations (total: {total}) to user {current_user.id}.")
     return {
         "total": total,
         "items": conversations
@@ -100,20 +111,24 @@ async def get_conversation(
     """
     获取会话详情
     """
+    logger.info(f"User {current_user.id} ({current_user.user_name}) requesting detail for conversation {conversation_id}.")
     conversation = await ConversationService.get(db=db, id=conversation_id)
     
     if not conversation:
+        logger.warning(f"Conversation {conversation_id} not found for user {current_user.id}.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation not found"
         )
         
     if conversation.user_id != current_user.id:
+        logger.warning(f"User {current_user.id} attempted to access unauthorized conversation {conversation_id} (owner: {conversation.user_id}).")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
         )
         
+    logger.info(f"Returned detail for conversation {conversation_id} to user {current_user.id}.")
     return conversation
 
 @router.put("/{conversation_id}", response_model=ConversationResponse)
@@ -126,15 +141,18 @@ async def update_conversation(
     """
     更新会话信息
     """
+    logger.info(f"User {current_user.id} ({current_user.user_name}) attempting to update conversation {conversation_id} with data: {conversation_data.dict()}")
     conversation = await ConversationService.get(db=db, id=conversation_id)
     
     if not conversation:
+        logger.warning(f"Conversation {conversation_id} not found for update by user {current_user.id}.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation not found"
         )
         
     if conversation.user_id != current_user.id:
+        logger.warning(f"User {current_user.id} attempted to update unauthorized conversation {conversation_id} (owner: {conversation.user_id}).")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
@@ -146,7 +164,7 @@ async def update_conversation(
         db_obj=conversation,
         obj_in=conversation_data
     )
-        
+    logger.info(f"Conversation {conversation_id} updated by user {current_user.id}.")
     return updated_conversation
 
 @router.delete("/{conversation_id}")
@@ -158,15 +176,18 @@ async def delete_conversation(
     """
     删除会话
     """
+    logger.info(f"User {current_user.id} ({current_user.user_name}) attempting to delete conversation {conversation_id}.")
     conversation = await ConversationService.get(db=db, id=conversation_id)
     
     if not conversation:
+        logger.warning(f"Conversation {conversation_id} not found for deletion by user {current_user.id}.")
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Conversation not found"
         )
         
     if conversation.user_id != current_user.id:
+        logger.warning(f"User {current_user.id} attempted to delete unauthorized conversation {conversation_id} (owner: {conversation.user_id}).")
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Not enough permissions"
@@ -174,5 +195,5 @@ async def delete_conversation(
     
     # TODO: 实现删除功能
     # await ConversationService.delete(db=db, id=conversation_id)
-        
+    logger.info(f"Conversation {conversation_id} marked for deletion by user {current_user.id}. (Actual deletion not yet implemented)") # 记录实际删除状态
     return {"message": "Conversation deleted successfully"} 

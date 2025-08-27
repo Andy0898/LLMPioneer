@@ -23,18 +23,26 @@ class DocumentService:
         user_id: int
         # description: str = None
     ) -> DocumentInfo:
+        logger.info(f"User {user_id} attempting to create document: {file.filename} in category {category_id}.")
         # 生成文件存储路径
         file_dir = os.path.join(settings.UPLOAD_DIR, datetime.now().strftime("%Y%m"))
         os.makedirs(file_dir, exist_ok=True)
+        logger.debug(f"File directory created/ensured: {file_dir}.")
         
         # 生成文件名
         file_ext = os.path.splitext(file.filename)[1]
         new_filename = f"{datetime.now().strftime('%Y%m%d%H%M%S')}_{user_id}{file_ext}"
         file_path = os.path.join(file_dir, new_filename)
+        logger.debug(f"New file path: {file_path}.")
         
         # 保存文件
-        with open(file_path, "wb+") as file_object:
-            file_object.write(await file.read())
+        try:
+            with open(file_path, "wb+") as file_object:
+                file_object.write(await file.read())
+            logger.info(f"File {file.filename} saved to {file_path}.")
+        except Exception as e:
+            logger.error(f"Failed to save file {file.filename} for user {user_id}: {e}", exc_info=True)
+            raise HTTPException(status_code=500, detail=f"Failed to save file: {file.filename}")
         
         # 创建文档记录
         db_obj = DocumentInfo(
@@ -48,6 +56,7 @@ class DocumentService:
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
+        logger.info(f"Document record {db_obj.id} created successfully for user {user_id}.")
         return db_obj
     
     @staticmethod
@@ -55,7 +64,13 @@ class DocumentService:
         """
         通过ID获取文档
         """
-        return await db.get(DocumentInfo, document_id)
+        logger.debug(f"Fetching document by ID: {document_id}.")
+        document = await db.get(DocumentInfo, document_id)
+        if document:
+            logger.debug(f"Document {document_id} found.")
+        else:
+            logger.debug(f"Document {document_id} not found.")
+        return document
     
     @staticmethod
     async def get_document_list(
@@ -65,6 +80,7 @@ class DocumentService:
         skip: int = 0,
         limit: int = 10
     ) -> List[DocumentInfo]:
+        logger.debug(f"Fetching document list. Category: {category_id}, User: {user_id}, Skip: {skip}, Limit: {limit}.")
         filters = [DocumentInfo.is_deleted == 0]
         
         if category_id:
@@ -78,10 +94,13 @@ class DocumentService:
         ).offset(skip).limit(limit)
         
         result = await db.execute(stmt)
-        return result.scalars().all()
+        documents = result.scalars().all()
+        logger.debug(f"Returned {len(documents)} documents.")
+        return documents
 
     @staticmethod
     async def delete_document(db: AsyncSession, document_id: int, user_id: int) -> bool:
+        logger.info(f"User {user_id} attempting to soft-delete document {document_id}.")
         stmt = select(DocumentInfo).filter(
             DocumentInfo.id == document_id,
             DocumentInfo.is_deleted == 0
@@ -90,12 +109,14 @@ class DocumentService:
         db_obj = result.scalar_one_or_none()
         
         if not db_obj:
+            logger.warning(f"Document {document_id} not found for soft-deletion by user {user_id}.")
             return False
             
         db_obj.is_deleted = 1
         db_obj.update_by = str(user_id)
         
         await db.commit()
+        logger.info(f"Document {document_id} soft-deleted successfully by user {user_id}.")
         return True
 
     @staticmethod
@@ -105,6 +126,7 @@ class DocumentService:
         settings_in: DocumentSettingsCreate,
         user_id: int
     ) -> DocumentSettings:
+        logger.info(f"User {user_id} attempting to create settings for document {document_id}.")
         db_obj = DocumentSettings(
             document_id=document_id,
             parse_level=settings_in.parse_level,
@@ -117,6 +139,7 @@ class DocumentService:
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
+        logger.info(f"Settings for document {document_id} created successfully by user {user_id}.")
         return db_obj
 
     @staticmethod
@@ -124,11 +147,17 @@ class DocumentService:
         db: AsyncSession,
         document_id: int
     ) -> Optional[DocumentSettings]:
+        logger.debug(f"Fetching settings for document ID: {document_id}.")
         stmt = select(DocumentSettings).filter(
             DocumentSettings.document_id == document_id
         )
         result = await db.execute(stmt)
-        return result.scalar_one_or_none()
+        settings = result.scalar_one_or_none()
+        if settings:
+            logger.debug(f"Settings for document {document_id} found.")
+        else:
+            logger.debug(f"Settings for document {document_id} not found.")
+        return settings
 
     @staticmethod
     async def update_document_settings(
@@ -137,9 +166,11 @@ class DocumentService:
         settings_in: DocumentSettingsCreate,
         user_id: int
     ) -> Optional[DocumentSettings]:
+        logger.info(f"User {user_id} attempting to update settings for document {document_id} with data: {settings_in.dict(exclude_unset=True)}.")
         db_obj = await DocumentService.get_document_settings(db, document_id)
         
         if not db_obj:
+            logger.warning(f"Settings for document {document_id} not found for update by user {user_id}. Attempting to create instead.")
             return await DocumentService.create_document_settings(db, document_id, settings_in, user_id)
             
         update_data = settings_in.dict(exclude_unset=True)
@@ -150,6 +181,7 @@ class DocumentService:
             
         await db.commit()
         await db.refresh(db_obj)
+        logger.info(f"Settings for document {document_id} updated successfully by user {user_id}.")
         return db_obj
     
     @staticmethod
@@ -158,6 +190,7 @@ class DocumentService:
         document_id: int,
     ) -> Dict[str, Any]:
         """处理文档并构建知识库"""
+        logger.info(f"Starting document processing for document ID: {document_id}.")
         try:
             # 1. 获取文档信息
             stmt = select(DocumentInfo).filter(
@@ -168,11 +201,13 @@ class DocumentService:
             document = result.scalar_one_or_none()
             
             if not document:
+                logger.error(f"Document {document_id} not found or already deleted during processing.")
                 raise ValueError(f"文档不存在: {document_id}")
 
             # 2. 获取文档设置
             document_settings = await DocumentService.get_document_settings(db, document_id)
             if not document_settings:
+                logger.error(f"Document settings not found for document {document_id} during processing.")
                 raise ValueError(f"文档设置未找到: {document_id}")
 
             # 3. 构建分块配置
@@ -182,16 +217,19 @@ class DocumentService:
                 "overlap_ratio": document_settings.chunking_overlap,
                 "separators": document_settings.chunk_identifier.split(",") if document_settings.chunk_identifier else None
             }
+            logger.debug(f"Chunk configuration for document {document_id}: {chunk_config}.")
 
             # 4. 创建文档处理器
             processor = DocumentProcessor(
                 embedding_model="text2vec-base"  # 可以从配置中读取
             )
+            logger.debug(f"DocumentProcessor initialized for document {document_id}.")
 
             # 5. 处理文档
             # 根据文档创建者判断是部门文档还是个人文档
             kb_type = "department" if document.category_id else "personal"
             owner_id = document.category_id if kb_type == "department" else document.create_by
+            logger.info(f"Processing document {document_id} as {kb_type} KB with owner ID: {owner_id}.")
 
             result = await processor.process(
                 file_path=document.file_url,
@@ -205,11 +243,11 @@ class DocumentService:
             document.status = 1  # 处理完成
             await db.commit()
 
-            logger.info(f"文档处理完成: {document_id}")
+            logger.info(f"Document processing completed successfully for document {document_id}.")
             return result
 
         except Exception as e:
-            logger.error(f"处理文档失败: {str(e)}")
+            logger.error(f"Failed to process document {document_id}: {e}", exc_info=True)
             # 更新文档状态为处理失败
             if document:
                 document.status = 2  # 处理失败
@@ -224,6 +262,7 @@ class DocumentService:
         top_k: int = 10
     ) -> List[Dict[str, Any]]:
         """获取文档的分块列表，支持相似度搜索"""
+        logger.debug(f"Fetching document chunks for document {document_id}. Query: {query}, Top K: {top_k}.")
         try:
             # 1. 获取文档信息
             stmt = select(DocumentInfo).filter(
@@ -234,11 +273,13 @@ class DocumentService:
             document = result.scalar_one_or_none()
             
             if not document:
+                logger.error(f"Document {document_id} not found or already deleted when fetching chunks.")
                 raise ValueError(f"文档不存在: {document_id}")
 
             # 2. 确定知识库类型和所有者ID
             kb_type = "department" if document.category_id else "personal"
             owner_id = document.category_id if kb_type == "department" else document.create_by
+            logger.debug(f"KB Type: {kb_type}, Owner ID: {owner_id} for document {document_id}.")
 
             # 3. 创建文档处理器
             processor = DocumentProcessor(
@@ -259,6 +300,7 @@ class DocumentService:
                     chunk for chunk in chunks 
                     if chunk.get("document_id") == document_id
                 ]
+                logger.debug(f"Performed similarity search for document {document_id}, returned {len(chunks)} chunks.")
             else:
                 # 如果没有查询，直接返回文档的所有分块
                 # 这里需要添加一个新的方法到 MilvusClient 中
@@ -266,11 +308,12 @@ class DocumentService:
                     collection_name=f"{kb_type}_kb",
                     document_id=document_id
                 )
+                logger.debug(f"Returned all chunks for document {document_id}: {len(chunks)} items.")
 
             return chunks
 
         except Exception as e:
-            logger.error(f"获取文档分块失败: {str(e)}")
+            logger.error(f"Failed to get document chunks for document {document_id}: {e}", exc_info=True)
             raise
 
     @staticmethod
@@ -281,6 +324,7 @@ class DocumentService:
         top_k: int = 5
     ) -> List[Dict[str, Any]]:
         """搜索文档中相似的内容"""
+        logger.info(f"Searching similar chunks for document {document_id} with query: {query[:50]}..., Top K: {top_k}.")
         return await DocumentService.get_document_chunks(
             db=db,
             document_id=document_id,

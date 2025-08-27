@@ -3,10 +3,14 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.db.models.message import MessageModel
 from app.schemas.message import MessageCreate, MessageUpdate
+from app.config.logger import get_logger # 导入日志
+
+logger = get_logger(__name__) # 获取Logger实例
 
 class MessageService:
     @staticmethod
     async def create(db: AsyncSession, obj_in: MessageCreate) -> MessageModel:
+        logger.info(f"Creating new message for conversation {obj_in.conversation_id} by user {obj_in.create_by}. Question: {obj_in.question[:50]}...")
         db_obj = MessageModel(
             conversation_id=obj_in.conversation_id,
             llm_id=obj_in.llm_id,
@@ -18,28 +22,38 @@ class MessageService:
         db.add(db_obj)
         await db.commit()
         await db.refresh(db_obj)
+        logger.info(f"Message {db_obj.id} created successfully for conversation {obj_in.conversation_id}.")
         return db_obj
 
     @staticmethod
     async def update(db: AsyncSession, db_obj: MessageModel, obj_in: MessageUpdate) -> MessageModel:
+        logger.info(f"Updating message {db_obj.id} for conversation {db_obj.conversation_id} with data: {obj_in.dict(exclude_unset=True)}.")
         update_data = obj_in.model_dump(exclude_unset=True)
         for field, value in update_data.items():
             setattr(db_obj, field, value)
         await db.commit()
         await db.refresh(db_obj)
+        logger.info(f"Message {db_obj.id} updated successfully.")
         return db_obj
 
     @staticmethod
     async def get(db: AsyncSession, id: int) -> Optional[MessageModel]:
+        logger.debug(f"Fetching message by ID: {id}.")
         result = await db.execute(
             select(MessageModel).filter(MessageModel.id == id)
         )
-        return result.scalar_one_or_none()
+        message = result.scalar_one_or_none()
+        if message:
+            logger.debug(f"Message {id} found.")
+        else:
+            logger.debug(f"Message {id} not found.")
+        return message
 
     @staticmethod
     async def get_by_conversation(
         db: AsyncSession, conversation_id: int, skip: int = 0, limit: int = 100
     ) -> List[MessageModel]:
+        logger.debug(f"Fetching messages for conversation {conversation_id}. Skip: {skip}, Limit: {limit}.")
         result = await db.execute(
             select(MessageModel)
             .filter(MessageModel.conversation_id == conversation_id)
@@ -47,12 +61,17 @@ class MessageService:
             .offset(skip)
             .limit(limit)
         )
-        return result.scalars().all()
+        messages = result.scalars().all()
+        logger.debug(f"Returned {len(messages)} messages for conversation {conversation_id}.")
+        return messages
 
     @staticmethod
     async def get_conversation_messages_count(db: AsyncSession, conversation_id: int) -> int:
+        logger.debug(f"Counting messages for conversation {conversation_id}.")
         result = await db.execute(
             select(MessageModel)
             .filter(MessageModel.conversation_id == conversation_id)
         )
-        return len(result.scalars().all()) 
+        total = len(result.scalars().all())
+        logger.debug(f"Total messages for conversation {conversation_id}: {total}.")
+        return total 
