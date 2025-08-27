@@ -11,7 +11,7 @@ router = APIRouter()
 
 class PermissionController:
     @staticmethod
-    @router.get("/", response_model=Tuple[List[FunctionPermission], int])
+    @router.get("/permissions", response_model=Tuple[List[FunctionPermission], int])
     async def list_permissions(
         skip: int = Query(0, ge=0),
         limit: int = Query(10, ge=1, le=100),
@@ -41,7 +41,7 @@ class PermissionController:
         return permission
 
     @staticmethod
-    @router.post("/", response_model=FunctionPermission)
+    @router.post("/add", response_model=FunctionPermission)
     async def create_permission(
         permission_data: FunctionPermissionCreate,
         db: AsyncSession = Depends(get_db),

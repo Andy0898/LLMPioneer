@@ -100,3 +100,13 @@ class DocumentCategoryService:
         
         await db.commit()
         return True
+    
+    @staticmethod
+    async def get_category_by_id(db: AsyncSession, category_id: int) -> Optional[DocumentCategory]:
+        """根据ID获取分类详情"""
+        stmt = select(DocumentCategory).filter(
+            DocumentCategory.id == category_id,
+            DocumentCategory.is_deleted == 0
+        )
+        result = await db.execute(stmt)
+        return result.scalar_one_or_none()

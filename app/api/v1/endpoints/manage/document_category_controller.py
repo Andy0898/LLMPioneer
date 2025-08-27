@@ -74,3 +74,19 @@ async def delete_enterprise_category(
     if not success:
         raise HTTPException(status_code=404, detail="Category not found")
     return {"status": "success"}
+
+@router.get("/category/{category_id}", response_model=DocumentCategoryTree)
+async def get_enterprise_category_detail(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    category_id: int,
+    current_user: UserModel = Depends(deps.get_current_active_user)
+) -> DocumentCategoryTree:
+    """根据ID获取企业知识库分类详情"""
+    category = await DocumentCategoryService.get_category_by_id(db=db, category_id=category_id)
+    if not category:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # 如果需要返回树形结构，这里可以根据需要调整
+    # 目前只返回单个分类的详情
+    return category

@@ -7,7 +7,7 @@ from .role import Role
 class UserBase(BaseModel):
     user_name: Optional[str] = None
     phone: Optional[str] = None
-    email: Optional[EmailStr] = None
+    # email: Optional[EmailStr] = None
     gender: Optional[int] = None
     user_type: str = "1"
     status: Optional[bool] = True

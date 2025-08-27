@@ -11,7 +11,7 @@ router = APIRouter()
 
 class RoleController:
     @staticmethod
-    @router.get("/", response_model=Tuple[List[Role], int])
+    @router.get("/roles", response_model=Tuple[List[Role], int])
     async def list_roles(
         skip: int = Query(0, ge=0),
         limit: int = Query(10, ge=1, le=100),
@@ -46,7 +46,7 @@ class RoleController:
         }
 
     @staticmethod
-    @router.post("/", response_model=Role)
+    @router.post("/add", response_model=Role)
     async def create_role(
         role_data: RoleCreate,
         db: AsyncSession = Depends(get_db),

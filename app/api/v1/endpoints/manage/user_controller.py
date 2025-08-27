@@ -44,7 +44,7 @@ class UserController:
         return user
 
     @staticmethod
-    @router.post("/users", response_model=User)
+    @router.post("/add", response_model=User)
     async def create_user(
         user_data: UserCreate,
         db: AsyncSession = Depends(get_db),

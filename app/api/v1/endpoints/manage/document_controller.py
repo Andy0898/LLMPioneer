@@ -16,10 +16,13 @@ from app.schemas.document import (
     DocumentSettingsInDB
 )
 from app.services.document_service import DocumentService
+from app.api.v1.deps import check_data_access_permission, require_permissions # 导入权限依赖
+from app.services.permission_manager import PermissionManager # 导入权限管理器
 
-router = APIRouter(dependencies=[Depends(deps.get_redis)])
+# router = APIRouter(dependencies=[Depends(deps.get_redis)])
+router = APIRouter()
 
-@router.post("/document/upload", response_model=List[DocumentInDB])
+@router.post("/document/upload", response_model=List[DocumentInDB], dependencies=[Depends(require_permissions(["document:upload"]))]) # 添加权限
 async def upload_enterprise_documents(
     *,
     db: AsyncSession = Depends(deps.get_db),
@@ -48,7 +51,8 @@ async def upload_enterprise_documents(
     
     return documents
 
-@router.get("/document/list", response_model=List[DocumentInDB])
+# @router.get("/document/list", response_model=List[DocumentInDB])
+@router.get("/document/list", response_model=List[DocumentInDB], dependencies=[Depends(require_permissions(["document:list"]))]) # 添加权限
 async def get_enterprise_documents(
     db: AsyncSession = Depends(deps.get_db),
     category_id: int = None,
@@ -65,9 +69,35 @@ async def get_enterprise_documents(
     )
     return documents
 
-# ... 其他路由处理器的 Session 类型也需要改为 AsyncSession
+# @router.get("/document/{document_id}", response_model=DocumentInDB)
+@router.get("/document/{document_id}", response_model=DocumentInDB, dependencies=[Depends(require_permissions(["document:read"]))]) # 添加权限
+async def get_enterprise_document_detail(
+    *,
+    db: AsyncSession = Depends(deps.get_db),
+    document_id: int,
+    current_user: UserModel = Depends(deps.get_current_active_user) # 仍需获取当前用户
+) -> DocumentInDB:
+    """根据ID获取企业知识库文档详情"""
+    document = await DocumentService.get_by_id(db=db, document_id=document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+    
+    # 使用 PermissionManager 进行数据访问权限检查
+    permission_manager = PermissionManager(db)
+    is_allowed = await permission_manager.validate_data_access(
+        user_id=current_user.id,
+        resource_owner_id=int(document.create_by), # 假设 create_by 是文档所有者的ID
+        resource_org_id=document.category_id, # 假设 category_id 可以作为组织ID
+        user_org_id=getattr(current_user, 'org_id', None) # 假设用户有 org_id 属性
+    )
 
-@router.delete("/document/{document_id}")
+    if not is_allowed:
+        raise HTTPException(status_code=403, detail="Not authorized to access this document")
+
+    return document
+
+# @router.delete("/document/{document_id}")
+@router.delete("/document/{document_id}", dependencies=[Depends(require_permissions(["document:delete"]))]) # 添加权限
 async def delete_enterprise_document(
     *,
     db: AsyncSession = Depends(deps.get_db),
@@ -75,6 +105,21 @@ async def delete_enterprise_document(
     current_user: UserModel = Depends(deps.get_current_active_user)
 ) -> dict:
     """删除企业知识库文档"""
+    # 数据访问权限检查
+    document = await DocumentService.get_by_id(db=db, document_id=document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Document not found")
+
+    permission_manager = PermissionManager(db)
+    is_allowed = await permission_manager.validate_data_access(
+        user_id=current_user.id,
+        resource_owner_id=int(document.create_by),
+        resource_org_id=document.category_id,
+        user_org_id=getattr(current_user, 'org_id', None)
+    )
+    if not is_allowed:
+        raise HTTPException(status_code=403, detail="Not authorized to delete this document")
+
     success = await DocumentService.delete_document(
         db=db,
         document_id=document_id,
@@ -84,7 +129,8 @@ async def delete_enterprise_document(
         raise HTTPException(status_code=404, detail="Document not found")
     return {"status": "success"}
 
-@router.post("/document/settings/create", response_model=DocumentSettingsInDB)
+# @router.post("/document/settings/create", response_model=DocumentSettingsInDB)
+@router.post("/document/settings/create", response_model=DocumentSettingsInDB, dependencies=[Depends(require_permissions(["document:settings"]))]) # 添加权限
 async def create_document_settings(
     document_settings_in: DocumentSettingsCreate,
     document_id: int,
@@ -92,10 +138,6 @@ async def create_document_settings(
     current_user: UserModel = Depends(deps.get_current_active_user)    
 ) -> DocumentSettingsInDB:
     """获取默认的文档解析设置"""
-    # 检查是否有管理员权限
-    # if not current_user.get("is_admin"):
-    #     raise HTTPException(status_code=403, detail="Not enough permissions")
-    
     # 检查 document_id 是否已经有 Settings记录
     existing_settings = await DocumentService.get_document_settings(db=db, document_id=document_id)
     if existing_settings:
@@ -118,7 +160,8 @@ async def get_document_settings(
         raise HTTPException(status_code=404, detail="Document settings not found")
     return settings
 
-@router.put("/document/settings/{document_id}", response_model=DocumentSettingsInDB)
+# @router.put("/document/settings/{document_id}", response_model=DocumentSettingsInDB)
+@router.put("/document/settings/{document_id}", response_model=DocumentSettingsInDB, dependencies=[Depends(require_permissions(["document:settings_update"]))]) # 添加权限
 async def update_document_settings(
     *,
     db: AsyncSession = Depends(deps.get_db),
@@ -127,7 +170,20 @@ async def update_document_settings(
     current_user: UserModel = Depends(deps.get_current_active_user)
 ) -> DocumentSettingsInDB:
     """更新企业知识库文档设置"""
-    settings_in.create_by = current_user.user_name
+    # 数据访问权限检查 (与文档详情类似)
+    document = await DocumentService.get_by_id(db=db, document_id=document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Associated document not found")
+
+    permission_manager = PermissionManager(db)
+    is_allowed = await permission_manager.validate_data_access(
+        user_id=current_user.id,
+        resource_owner_id=int(document.create_by),
+        resource_org_id=document.category_id,
+        user_org_id=getattr(current_user, 'org_id', None)
+    )
+    if not is_allowed:
+        raise HTTPException(status_code=403, detail="Not authorized to update these settings")
     settings = await DocumentService.update_document_settings(
         db=db,
         document_id=document_id,
@@ -136,13 +192,30 @@ async def update_document_settings(
     )
     return settings
 
-@router.post("/document/process/{document_id}", response_model=DocumentProcessResponse)
+# @router.post("/document/process/{document_id}", response_model=DocumentProcessResponse)
+@router.post("/document/process/{document_id}", response_model=DocumentProcessResponse, dependencies=[Depends(require_permissions(["document:process"]))]) # 添加权限
 async def process_document(
     *,
+    db: AsyncSession = Depends(deps.get_db),
     document_id: int,
     current_user: UserModel = Depends(deps.get_current_active_user)
 ) -> DocumentProcessResponse:
     """处理企业知识库文档"""
+    # 数据访问权限检查 (与文档详情类似)
+    document = await DocumentService.get_by_id(db=db, document_id=document_id)
+    if not document:
+        raise HTTPException(status_code=404, detail="Associated document not found")
+
+    permission_manager = PermissionManager(db)
+    is_allowed = await permission_manager.validate_data_access(
+        user_id=current_user.id,
+        resource_owner_id=int(document.create_by),
+        resource_org_id=document.category_id,
+        user_org_id=getattr(current_user, 'org_id', None)
+    )
+    if not is_allowed:
+        raise HTTPException(status_code=403, detail="Not authorized to process this document")
+    
     task = celery_app.send_task(
         "app.core.tasks.document_task.process_document",
         args=[document_id, current_user.id],
@@ -150,7 +223,8 @@ async def process_document(
     )
     return DocumentProcessResponse(task_id=task.id)
 
-@router.get("/document/progress/{task_id}", response_model=ProcessProgress)
+# @router.get("/document/progress/{task_id}", response_model=ProcessProgress)
+@router.get("/document/progress/{task_id}", response_model=ProcessProgress, dependencies=[Depends(require_permissions(["document:process"]))]) # 添加权限
 async def get_process_progress(
     *,
     task_id: str,

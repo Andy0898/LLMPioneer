@@ -35,7 +35,7 @@ async def get_current_user(
         
     result = await db.execute(
         select(UserModel)
-        .options(selectinload(UserModel.user_roles).selectinload(UserModel.user_roles.role))
+        .options(selectinload(UserModel.user_roles))
         .where(UserModel.user_name == user_name)
     )
     user = result.scalar_one_or_none()
