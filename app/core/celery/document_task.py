@@ -1,7 +1,7 @@
 from typing import Dict, Any
 import asyncio
 from celery import Task
-from app.core.celery_app import celery_app
+from .celery_app import celery_app
 from app.api.v1.deps import get_db
 from app.db.session import AsyncSessionLocal
 from app.services.document_service import DocumentService

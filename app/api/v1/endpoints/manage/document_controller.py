@@ -3,7 +3,7 @@ from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.api.v1 import deps
 from app.db.models.user import UserModel
-from app.core.celery_app import celery_app
+from app.core.celery.celery_app import celery_app
 from app.schemas.document import (
     DocumentCreate,
     DocumentInDB,
