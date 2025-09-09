@@ -16,7 +16,7 @@ from app.db.models.llm_configuration import LlmConfigurationModel
 from app.config.logger import get_logger
 import asyncio
 
-log = get_logger(__name__)
+logger = get_logger(__name__)
 
 async def get_llm_response(
     question: str,
@@ -79,16 +79,16 @@ async def get_llm_response(
                         stream=True # 流式输出,这里的属性名称是 stream
                     )
                     
-                    log.info(f"使用Xinference的模型(流式): {llm_config.llm_en_name}")
+                    logger.info(f"使用Xinference的模型(流式): {llm_config.llm_en_name}")
 
                     async for chunk in llm.astream(messages):
                         yield chunk
 
-                    log.info("完成Xinference的流式响应")
+                    logger.info("完成Xinference的流式响应")
                         
                 else:
                     error_msg = f"不支持的本地模型名称: {llm_config.llm_en_name}"
-                    log.error(error_msg)
+                    logger.error(error_msg)
                     yield error_msg
             else: # 线上模型
                 if llm_config.llm_en_name in ["deepseek-chat", "deepseek-reasoner"]:
@@ -101,8 +101,8 @@ async def get_llm_response(
                         streaming=True # 流式输出,这里的属性名称是 streaming
                     )
                     
-                    log.info(f"使用DeepSeek的模型(流式): {llm_config.llm_en_name}")
-                    log.info(f"使用DeepSeek的消息: {messages}")
+                    logger.info(f"使用DeepSeek的模型(流式): {llm_config.llm_en_name}")
+                    logger.info(f"使用DeepSeek的消息: {messages}")
                     
                     # 直接使用字典格式的消息
                     async for chunk in llm.astream(messages):
@@ -110,12 +110,12 @@ async def get_llm_response(
                         yield chunk_text
                 else:
                     error_msg = f"不支持的线上模型名称: {llm_config.llm_en_name}"
-                    log.error(error_msg)
+                    logger.error(error_msg)
                     yield error_msg
                     
         except Exception as e:
             error_msg = f"与LLM交互时发生错误: {str(e)}"
-            log.error(error_msg, exc_info=True)
+            logger.error(error_msg, exc_info=True)
             yield error_msg
 
     async def handle_non_stream_response() -> Dict[str, str]:
@@ -132,9 +132,9 @@ async def get_llm_response(
                         streaming=False
                     )
                     
-                    log.info(f"使用Xinference的模型(非流式): {llm_config.llm_en_name}")
+                    logger.info(f"使用Xinference的模型(非流式): {llm_config.llm_en_name}")
                     response = llm.invoke(messages)
-                    log.info(f"收到Xinference的响应: {response}")
+                    logger.info(f"收到Xinference的响应: {response}")
                     ai_message = response
                     
                 else:
@@ -150,9 +150,9 @@ async def get_llm_response(
                         streaming=False
                     )
                     
-                    log.info(f"使用DeepSeek的模型(非流式): {llm_config.llm_en_name}")
+                    logger.info(f"使用DeepSeek的模型(非流式): {llm_config.llm_en_name}")
                     response = llm.invoke(messages)
-                    log.info(f"收到DeepSeek的响应: {response}")
+                    logger.info(f"收到DeepSeek的响应: {response}")
                     ai_message = response
                 else:
                     raise ValueError(f"不支持的线上模型名称: {llm_config.llm_en_name}")
@@ -170,7 +170,7 @@ async def get_llm_response(
             }
             
         except Exception as e:
-            log.error(f"与LLM交互时发生错误: {str(e)}", exc_info=True)
+            logger.error(f"与LLM交互时发生错误: {str(e)}", exc_info=True)
             return {
                 "content": f"与LLM交互时发生错误: {str(e)}",
                 "reasoning_content": None
@@ -200,7 +200,7 @@ async def example_usage(model_choice=1):
     elif model_choice == 2:
         llm_config = LlmConfigurationModel(
             api_url="https://api.deepseek.com/v1",
-            api_key="sk-da48bd1f1b3a4cf59897a0f620b35031",
+            api_key="sk-",
             llm_en_name="deepseek-chat",
             is_local_llm=False,
             temperature=0.7,
