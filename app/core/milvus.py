@@ -25,7 +25,7 @@ class MilvusClient:
     def _connect(self):
         """连接到Milvus服务器"""
         try:
-            log.info(f"连接到Milvus服务器: {settings.MILVUS_HOST}:{settings.MILVUS_PORT}")
+            logger.info(f"连接到Milvus服务器: {settings.MILVUS_HOST}:{settings.MILVUS_PORT}")
             connections.connect(
                 alias="default",
                 host=settings.MILVUS_HOST,
@@ -34,7 +34,7 @@ class MilvusClient:
                 password=settings.MILVUS_PASSWORD
             )
         except Exception as e:
-            log.error(f"连接到Milvus服务器失败: {e}")
+            logger.error(f"连接到Milvus服务器失败: {e}", exc_info=True)
             sys.exit(1)  # 退出程序
 
     def create_collection(self, collection_name: str, dim: int = 1536) -> Collection:
@@ -68,7 +68,7 @@ class MilvusClient:
 
             return collection
         except Exception as e:
-            logger.error(f"创建集合失败: {e}")
+            logger.error(f"创建集合失败: {e}", exc_info=True)
             return None
 
     def insert(self, collection_name: str, vectors: List[List[float]], metadata: List[Dict[str, Any]]):
@@ -93,7 +93,7 @@ class MilvusClient:
             # 加载集合到内存
             collection.load()
         except Exception as e:
-            logger.error(f"插入数据失败: {e}")
+            logger.error(f"插入数据失败: {e}", exc_info=True)
 
     def create_index(self, collection_name: str, index_type: str = "IVF_FLAT", metric_type: str = "L2"):
         """创建索引"""
@@ -111,7 +111,7 @@ class MilvusClient:
             # 加载集合到内存
             collection.load()
         except Exception as e:
-            logger.error(f"创建索引失败: {e}")
+            logger.error(f"创建索引失败: {e}", exc_info=True)
 
     def search(
         self,
@@ -149,7 +149,7 @@ class MilvusClient:
 
             return hits
         except Exception as e:
-            logger.error(f"搜索失败: {e}")
+            logger.error(f"搜索失败: {e}", exc_info=True)
             return []
 
     def delete_collection(self, collection_name: str):
@@ -158,7 +158,7 @@ class MilvusClient:
             if utility.exists_collection(collection_name):
                 utility.drop_collection(collection_name)
         except Exception as e:
-            logger.error(f"删除集合失败: {e}")
+            logger.error(f"删除集合失败: {e}", exc_info=True)
 
     def close(self):
         """关闭连接"""
@@ -206,5 +206,5 @@ class MilvusClient:
 
             return chunks
         except Exception as e:
-            logger.error(f"获取文档分块失败: {str(e)}")
+            logger.error(f"获取文档分块失败: {e}", exc_info=True)
             return []

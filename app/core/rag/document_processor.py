@@ -1,6 +1,5 @@
 from typing import Dict, Any, Optional, List
 from pathlib import Path
-import logging
 from app.core.milvus import MilvusClient
 from app.config.logger import get_logger
 from .document_loader import DocumentLoader
@@ -82,7 +81,7 @@ class DocumentProcessor:
             }
             
         except Exception as e:
-            logger.error(f"处理文档失败: {str(e)}")
+            logger.error(f"处理文档失败: {e}", exc_info=True)
             raise
     
     async def search(
@@ -112,7 +111,7 @@ class DocumentProcessor:
             return results
             
         except Exception as e:
-            logger.error(f"搜索失败: {str(e)}")
+            logger.error(f"搜索失败: {e}", exc_info=True)
             raise
     
     def delete_knowledge_base(self, kb_type: str):
@@ -121,7 +120,7 @@ class DocumentProcessor:
             collection_name = f"{kb_type}_kb"
             self.milvus_client.delete_collection(collection_name)
         except Exception as e:
-            logger.error(f"删除知识库失败: {str(e)}")
+            logger.error(f"删除知识库失败: {e}", exc_info=True)
             raise
     
     def close(self):

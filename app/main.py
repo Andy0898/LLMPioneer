@@ -8,7 +8,7 @@
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
-from app.config.settings import settings
+from app.core.config import CONFIG as settings
 from app.api.v1.endpoints.manage import router as manage_router
 from app.api.v1.endpoints.sa import router as sa_router
 from app.api.v1.endpoints.auth_controller import router as auth_router
@@ -117,8 +117,8 @@ if __name__ == "__main__":
     import uvicorn
     
     # 从配置文件读取端口，而不是硬编码
-    port = getattr(settings, 'PORT', 18000)
-    host = getattr(settings, 'HOST', '127.0.0.1')
+    port = settings.port
+    host = settings.server.host
     
     uvicorn.run(
         app, 
@@ -126,4 +126,4 @@ if __name__ == "__main__":
         port=port,
         reload=True,  # 开发环境启用热重载
         log_level="info"
-    ) 
+    )

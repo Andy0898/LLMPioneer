@@ -18,7 +18,7 @@ class DocumentEmbedder:
             )
             logger.info(f"加载向量化模型成功: {model_name}")
         except Exception as e:
-            logger.error(f"加载向量化模型失败: {str(e)}")
+            logger.error(f"加载向量化模型失败: {e}", exc_info=True)
             raise
     
     async def embed(self, chunks: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -45,7 +45,7 @@ class DocumentEmbedder:
             
             return chunks
         except Exception as e:
-            logger.error(f"文本向量化失败: {str(e)}")
+            logger.error(f"文本向量化失败: {e}", exc_info=True)
             raise
     
     def get_dimension(self) -> int:

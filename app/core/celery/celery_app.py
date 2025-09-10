@@ -10,7 +10,7 @@ celery_app = Celery(
     "knowledge_base",
     broker=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
     backend=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
-    include=['app.core.tasks.document_task']  # 显式包含任务模块
+    include=['app.core.celery.document_task']  # 显式包含任务模块
 )
 
 # Celery 配置

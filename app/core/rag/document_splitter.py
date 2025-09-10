@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 from dataclasses import dataclass
-import logging
+from app.config.logger import get_logger
 from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,
     MarkdownHeaderTextSplitter,
@@ -8,7 +8,7 @@ from langchain.text_splitter import (
 )
 from langchain.schema import Document
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 @dataclass
 class ChunkConfig:
@@ -51,7 +51,7 @@ class DocumentSplitter:
                 for chunk in chunks
             ]
         except Exception as e:
-            logger.error(f"文档分块失败: {str(e)}")
+            logger.error(f"文档分块失败", exc_info=True)
             raise
     
     async def _split_hierarchical(self, content: str) -> List[Document]:

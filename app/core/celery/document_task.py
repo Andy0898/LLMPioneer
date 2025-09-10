@@ -7,7 +7,7 @@ from app.db.session import AsyncSessionLocal
 from app.services.document_service import DocumentService
 from app.config.logger import get_logger
 
-log = get_logger(__name__)
+logger = get_logger(__name__)
 
 class DocumentProcessTask(Task):
     """文档处理任务基类"""
@@ -20,7 +20,7 @@ class DocumentProcessTask(Task):
             self._db = None
 
 @celery_app.task(
-    name='app.core.tasks.document_task.process_document',
+    name='app.core.celery.document_task.process_document',
     base=DocumentProcessTask,
     bind=True
 )
@@ -72,7 +72,7 @@ def process_document(self, document_id: int, user_id: int) -> Dict[str, Any]:
                         'chunks_count': len(chunks) if chunks else 0
                     }
             except Exception as e:
-                log.error(f"处理文档时出错: {str(e)}")
+                logger.error(f"处理文档时出错: {e}", exc_info=True)
                 raise
                 
         # 运行异步任务
@@ -81,7 +81,7 @@ def process_document(self, document_id: int, user_id: int) -> Dict[str, Any]:
         return result
         
     except Exception as e:
-        log.error(f"处理文档任务失败: {str(e)}")
+        logger.error(f"处理文档任务失败: {e}", exc_info=True)
         return {
             'status': 'error',
             'error': str(e),

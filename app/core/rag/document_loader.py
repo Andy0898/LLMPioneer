@@ -60,5 +60,5 @@ class DocumentLoader:
             }
             
         except Exception as e:
-            logger.error(f"加载文档失败: {str(e)}")
+            logger.error(f"加载文档失败: {e}", exc_info=True)
             raise
