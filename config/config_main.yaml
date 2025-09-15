@@ -1,0 +1,38 @@
+project:
+  name: "LLM Pioneer"
+  version: "1.0.0"
+  debug: true
+
+mysql:
+  host_env: MYSQL_HOST
+  port: 3306
+  user_env: MYSQL_USER
+  password_env: MYSQL_PASSWORD
+  database_env: MYSQL_DATABASE
+
+redis:
+  host_env: REDIS_HOST
+  port: 6379
+  db: 0
+
+upload:
+  dir: "uploads"
+  max_size_mb: 20
+  allowed_extensions:
+    - ".pdf"
+    - ".doc"
+    - ".docx"
+    - ".xls"
+    - ".xlsx"
+    - ".jpg"
+    - ".jpeg"
+    - ".png"
+
+security:
+  secret_key_env: SECRET_KEY
+  access_token_expire_minutes: 1440
+  algorithm: "HS256"
+
+cors:
+  origins:
+    - "*"

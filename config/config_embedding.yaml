@@ -1,4 +1,4 @@
-preferred_provider: azure_openai
+preferred_provider: aliyun_qwen_openai
 
 providers:
   azure_openai:
@@ -36,3 +36,8 @@ providers:
     api_endpoint_env: SNOWFLAKE_ACCOUNT_URL
     api_version_env: "2024-10-01"
     model: snowflake-arctic-embed-m-v1.5
+  
+  aliyun_qwen_openai:
+    api_key_env: ALIYUN_API_KEY
+    api_endpoint_env: ALIYUN_ENDPOINT
+    model: text-embedding-v3

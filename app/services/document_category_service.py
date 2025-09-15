@@ -3,9 +3,9 @@ from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.db.models.document_category import DocumentCategory
 from app.schemas.document_category import DocumentCategoryCreate, DocumentCategoryUpdate
-from app.config.logger import get_logger # 导入日志
+from app.core.logger.logging_config_helper import get_configured_logger # 导入日志
 
-logger = get_logger(__name__) # 获取Logger实例
+logger = get_configured_logger("pioneer_handler") # 获取Logger实例
 
 class DocumentCategoryService:
     @staticmethod

@@ -7,12 +7,12 @@ from pymilvus import (
     DataType,
     utility
 )
-from app.config import settings
+from app.core.config import CONFIG as settings
 import signal
 import sys
-from app.config.logger import get_logger
+from app.core.logger.logging_config_helper import get_configured_logger
 
-logger = get_logger(__name__)
+logger = get_configured_logger("pioneer_handler")
 
 class MilvusClient:
     def __init__(self):
@@ -28,7 +28,7 @@ class MilvusClient:
             logger.info(f"连接到Milvus服务器: {settings.MILVUS_HOST}:{settings.MILVUS_PORT}")
             connections.connect(
                 alias="default",
-                host=settings.MILVUS_HOST,
+                host=settings.retrieval_endpoints.MILVUS_HOST,
                 port=settings.MILVUS_PORT,
                 user=settings.MILVUS_USER,
                 password=settings.MILVUS_PASSWORD

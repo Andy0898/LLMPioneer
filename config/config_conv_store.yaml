@@ -62,6 +62,19 @@ storage_endpoints:
     # TTL in seconds (optional)
     ttl_seconds: 86400  # 24 hours
 
+  # MySQL configuration
+  mysql:
+    enabled: false
+    type: mysql
+    # Connection string (from environment variable)
+    connection_string_env: MYSQL_CONV_CONNECTION_STRING
+    # Or individual connection parameters
+    host_env: MYSQL_HOST
+    port: MYSQL_PORT
+    database: sadb
+    user_env: MYSQL_USER
+    password_env: MYSQL_PASSWORD
+  
   # PostgreSQL with pgvector
   postgres:
     enabled: false

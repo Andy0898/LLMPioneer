@@ -18,9 +18,9 @@ from app.schemas.document import (
 from app.services.document_service import DocumentService
 from app.api.v1.deps import check_data_access_permission, require_permissions # 导入权限依赖
 from app.services.permission_manager import PermissionManager # 导入权限管理器
-from app.config.logger import get_logger # 导入日志
+from app.core.logger.logging_config_helper import get_configured_logger # 导入日志
 
-logger = get_logger(__name__) # 获取Logger实例
+logger = get_configured_logger("pioneer_handler") # 获取Logger实例
 
 # router = APIRouter(dependencies=[Depends(deps.get_redis)])
 router = APIRouter()

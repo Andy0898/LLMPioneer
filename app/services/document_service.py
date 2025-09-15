@@ -7,12 +7,12 @@ from datetime import datetime
 from app.db.models.document_info import DocumentInfo
 from app.db.models.document_settings import DocumentSettings
 from app.schemas.document import DocumentCreate, DocumentUpdate, DocumentSettingsCreate
-from app.config.settings import settings
+from app.core.config import CONFIG as settings
 from app.core.rag.document_processor import DocumentProcessor
 from app.core.rag.document_splitter import ChunkConfig
 
-from app.config.logger import get_logger
-logger = get_logger(__name__)
+from app.core.logger.logging_config_helper import get_configured_logger
+logger = get_configured_logger("pioneer_handler")
 
 class DocumentService:
     @staticmethod
@@ -25,7 +25,7 @@ class DocumentService:
     ) -> DocumentInfo:
         logger.info(f"User {user_id} attempting to create document: {file.filename} in category {category_id}.")
         # 生成文件存储路径
-        file_dir = os.path.join(settings.UPLOAD_DIR, datetime.now().strftime("%Y%m"))
+        file_dir = os.path.join(settings.upload.dir, datetime.now().strftime("%Y%m"))
         os.makedirs(file_dir, exist_ok=True)
         logger.debug(f"File directory created/ensured: {file_dir}.")
         
@@ -331,4 +331,3 @@ class DocumentService:
             query=query,
             top_k=top_k
         )
-       

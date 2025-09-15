@@ -17,6 +17,11 @@ logging:
       default_level: ERROR
       log_file: "llm_wrapper.log"
     
+    aliyun_qwen_llm:
+      env_var: "ALIYUN_QWEN_LLM_LOG_LEVEL"
+      default_level: ERROR
+      log_file: "aliyun_qwen_llm.log"
+
     azure_openai:
       env_var: "AZURE_OPENAI_LOG_LEVEL"
       default_level: ERROR

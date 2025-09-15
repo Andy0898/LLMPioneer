@@ -1,12 +1,12 @@
 from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine
 from sqlalchemy.orm import sessionmaker
-from app.config.settings import settings
+from app.core.config import CONFIG as settings
 from sqlalchemy import text
 
 # 创建异步引擎
 engine = create_async_engine(
-    str(settings.SQLALCHEMY_DATABASE_URI),
+    str(settings.mysql.uri),
     echo=False,
     pool_pre_ping=True,
     pool_size=10,
@@ -46,4 +46,4 @@ async def test_db_connection() -> bool:
             return True
     except Exception as e:
         print(f"数据库连接测试失败: {str(e)}")
-        return False 
+        return False

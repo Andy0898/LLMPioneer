@@ -1,4 +1,4 @@
-port: 8000
+port: 18000
 static_directory: ../static
 
 # the system can be run in development, production, or testing mode.
@@ -24,7 +24,7 @@ server:
   # Logging configuration
   logging:
     level: info
-    file: ./logs/webserver.log
+    file: ./logs/webserver.log 
     
   # Static file serving
   static:

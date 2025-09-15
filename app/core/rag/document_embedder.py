@@ -1,11 +1,11 @@
 from typing import List, Dict, Any
 
 import torch
-from app.config.logger import get_logger
+from app.core.logger.logging_config_helper import get_configured_logger
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain.schema import Document
 
-logger = get_logger(__name__)
+logger = get_configured_logger("embedding_wrapper")
 
 class DocumentEmbedder:
     """基于LangChain的文档向量化器"""

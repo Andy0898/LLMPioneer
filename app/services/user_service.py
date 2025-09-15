@@ -5,9 +5,9 @@ from sqlalchemy.orm import selectinload
 from app.db.models import UserModel, RoleModel, UserRoleModel
 from app.schemas.user import UserCreate, UserUpdate
 from app.core.security import get_password_hash, verify_password
-from app.config.logger import get_logger # 导入日志
+from app.core.logger.logging_config_helper import get_configured_logger # 导入日志
 
-logger = get_logger(__name__) # 获取Logger实例
+logger = get_configured_logger("pioneer_handler") # 获取Logger实例
 
 class UserService:
     def __init__(self, db: AsyncSession):

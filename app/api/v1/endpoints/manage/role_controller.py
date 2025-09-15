@@ -6,9 +6,9 @@ from app.db.session import get_db
 from app.schemas.role import Role, RoleCreate, RoleUpdate, RoleWithPermissions
 from app.services.role_service import RoleService
 from app.db.models.user import UserModel
-from app.config.logger import get_logger # 导入日志
+from app.core.logger.logging_config_helper import get_configured_logger # 导入日志
 
-logger = get_logger(__name__) # 获取Logger实例
+logger = get_configured_logger("pioneer_handler") # 获取Logger实例
 
 router = APIRouter()
 

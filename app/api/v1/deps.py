@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
-from app.config.settings import settings
+from app.core.config import CONFIG as settings
 from app.db.session import get_db
 from app.core.security import verify_token
 from app.db.models import UserModel
@@ -205,10 +205,9 @@ def check_data_access_permission(
     return data_access_dependency
 
 import redis
-from app.config.settings import settings
-from app.config.logger import get_logger
+from app.core.logger.logging_config_helper import get_configured_logger
 
-logger = get_logger(__name__)
+logger = get_configured_logger("pioneer_handler")
 
 def get_redis():
     """
@@ -217,9 +216,9 @@ def get_redis():
     """
     try:
         redis_client = redis.Redis(
-            host=settings.REDIS_HOST,
-            port=settings.REDIS_PORT,
-            db=settings.REDIS_DB,
+            host=settings.redis.host,
+            port=settings.redis.port,
+            db=settings.redis.db,
             socket_connect_timeout=1,  # Set a timeout to avoid long waits
         )
         redis_client.ping()
@@ -229,4 +228,4 @@ def get_redis():
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Redis service is unavailable."
-        ) 
+        )

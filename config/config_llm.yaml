@@ -1,4 +1,4 @@
-preferred_endpoint: azure_openai
+preferred_endpoint: aliyun_qwen_openai
 
 endpoints:
   anthropic:
@@ -73,3 +73,11 @@ endpoints:
     models:
       high: claude-3-5-sonnet
       low: llama3.1-8b
+  
+  aliyun_qwen_openai:
+    api_key_env: ALIYUN_API_KEY
+    api_endpoint_env: ALIYUN_ENDPOINT
+    llm_type: qwen_openai
+    models:
+      high: qwen-plus-latest
+      low: qwen-plus-latest

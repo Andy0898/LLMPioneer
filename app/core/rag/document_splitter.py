@@ -1,6 +1,6 @@
 from typing import List, Dict, Any
 from dataclasses import dataclass
-from app.config.logger import get_logger
+from app.core.logger.logging_config_helper import get_configured_logger
 from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,
     MarkdownHeaderTextSplitter,
@@ -8,7 +8,7 @@ from langchain.text_splitter import (
 )
 from langchain.schema import Document
 
-logger = get_logger(__name__)
+logger = get_configured_logger("embedding_wrapper")
 
 @dataclass
 class ChunkConfig:

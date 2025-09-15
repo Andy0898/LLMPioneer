@@ -2,11 +2,12 @@ from datetime import datetime, timedelta
 from typing import Optional, Union
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from app.config.settings import settings
+from app.core.config import CONFIG as settings
 from functools import wraps
 from fastapi import HTTPException, status
 from app.services.role_service import RoleService
 from typing import List
+
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
@@ -29,9 +30,9 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None) -
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
     else:
-        expire = datetime.utcnow() + timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
+        expire = datetime.utcnow() + timedelta(minutes=settings.security.access_token_expire_minutes)
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, settings.SECRET_KEY, algorithm=settings.ALGORITHM)
+    encoded_jwt = jwt.encode(to_encode, settings.security.secret_key, algorithm=settings.security.algorithm)
     return encoded_jwt
 
 def verify_token(token: str) -> Union[dict, None]:
@@ -39,7 +40,7 @@ def verify_token(token: str) -> Union[dict, None]:
     验证令牌
     """
     try:
-        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM])
+        payload = jwt.decode(token, settings.security.secret_key, algorithms=[settings.security.algorithm])
         return payload
     except JWTError:
         return None 

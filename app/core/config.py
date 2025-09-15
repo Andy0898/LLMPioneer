@@ -141,6 +141,33 @@ class StorageBehaviorConfig:
     auto_migrate_on_login: bool = True
     max_migrate_conversations: int = 500
 
+@dataclass
+class MySQLConfig:
+    host: str
+    port: int
+    user: str
+    database: str
+    password: Optional[str] = None
+    uri: Optional[str] = None
+
+@dataclass
+class RedisConfig:
+    host: str
+    port: int
+    db: int
+
+@dataclass
+class UploadConfig:
+    dir: str
+    max_size_mb: int
+    allowed_extensions: List[str]
+
+@dataclass
+class SecurityConfig:
+    secret_key: Optional[str] = None
+    access_token_expire_minutes: int = 1440
+    algorithm: str = "HS256"
+
 class AppConfig:
     config_paths = ["config.yaml", "config_llm.yaml", "config_embedding.yaml", "config_retrieval.yaml", 
                    "config_webserver.yaml", "config_pioneer.yaml", "config_conv_store.yaml", "config_oauth.yaml"]
@@ -150,10 +177,8 @@ class AppConfig:
         # Set config directory - can be overridden by PIONEER_CONFIG_DIR environment variable
         self.config_directory = self._get_config_directory()
         self.base_output_directory = self._get_base_output_directory()
-        self.PROJECT_NAME = "LLM Pioneer"
-        self.VERSION = "1.0.0"
-        self.API_V1_STR = "/api/v1"
-        self.BACKEND_CORS_ORIGINS = ["*"]
+        
+        self.load_main_config()
         self.load_llm_config()
         self.load_embedding_config()
         self.load_retrieval_config()
@@ -220,13 +245,17 @@ class AppConfig:
 
     def _get_config_value(self, value: Any, default: Any = None) -> Any:
         """
-        Get configuration value. If value is a string, return it directly.
-        Otherwise, treat it as an environment variable name and fetch from environment.
+        Get configuration value. If value is a string that ends with _ENV,
+        treat it as an environment variable name and fetch from environment.
+        Otherwise, return the value directly.
         Returns default if environment variable is not set or value is None.
         """
         if value is None:
             return default
             
+        if isinstance(value, str) and value.endswith('_env'):
+            return os.getenv(value[:-4], default)
+
         if isinstance(value, str):
             # If it's clearly an environment variable name (e.g., "OPENAI_API_KEY_ENV")
             if value.endswith('_ENV') or value.isupper():
@@ -237,6 +266,67 @@ class AppConfig:
         
         # For non-string values, return as-is
         return value
+
+    def load_main_config(self, path: str = "config_main.yaml"):
+        """Load the main configuration file."""
+        full_path = os.path.join(self.config_directory, path)
+        try:
+            with open(full_path, "r") as f:
+                data = yaml.safe_load(f)
+        except FileNotFoundError:
+            logger.error(f"Main config file {path} not found. Using default values.")
+            data = {}
+
+        # Project settings
+        project_data = data.get("project", {})
+        self.PROJECT_NAME = project_data.get("name", "LLM Pioneer")
+        self.VERSION = project_data.get("version", "1.0.0")
+        self.DEBUG = project_data.get("debug", False)
+        self.API_V1_STR = "/api/v1" # This seems to be constant
+
+        # CORS settings
+        cors_data = data.get("cors", {})
+        self.BACKEND_CORS_ORIGINS = cors_data.get("origins", ["*"])
+
+        # MySQL config
+        mysql_data = data.get("mysql", {})
+        self.mysql = MySQLConfig(
+            host=self._get_config_value(mysql_data.get("host_env"), mysql_data.get("host")),
+            port=mysql_data.get("port", 3306),
+            user=self._get_config_value(mysql_data.get("user_env"), mysql_data.get("user")),
+            password=self._get_config_value(mysql_data.get("password_env")),
+            database=self._get_config_value(mysql_data.get("database_env"), mysql_data.get("database"))
+        )
+        if self.mysql.user and self.mysql.password and self.mysql.host and self.mysql.database:
+            self.mysql.uri = f"mysql+aiomysql://{self.mysql.user}:{self.mysql.password}@{self.mysql.host}:{self.mysql.port}/{self.mysql.database}"
+        else:
+            self.mysql.uri = None
+
+        # Redis config
+        redis_data = data.get("redis", {})
+        self.redis = RedisConfig(
+            host=self._get_config_value(redis_data.get("host_env"), redis_data.get("host")),
+            port=redis_data.get("port", 6379),
+            db=redis_data.get("db", 0)
+        )
+
+        # Upload config
+        upload_data = data.get("upload", {})
+        upload_dir = self._resolve_path(upload_data.get("dir", "uploads"))
+        os.makedirs(upload_dir, exist_ok=True)
+        self.upload = UploadConfig(
+            dir=upload_dir,
+            max_size_mb=upload_data.get("max_size_mb", 20),
+            allowed_extensions=upload_data.get("allowed_extensions", [])
+        )
+
+        # Security config
+        security_data = data.get("security", {})
+        self.security = SecurityConfig(
+            secret_key=self._get_config_value(security_data.get("secret_key_env")),
+            access_token_expire_minutes=security_data.get("access_token_expire_minutes", 1440),
+            algorithm=security_data.get("algorithm", "HS256")
+        )
 
     def load_llm_config(self, path: str = "config_llm.yaml"):
         # Build the full path to the config file using the config directory

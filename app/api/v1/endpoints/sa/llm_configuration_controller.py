@@ -9,10 +9,10 @@ from app.schemas.llm_configuration import (
     LlmConfigurationUpdate
 )
 from app.services.llm_configuration_service import LlmConfigurationService
-from app.config import settings
-from app.config.logger import get_logger # 导入日志
+# from app.core.config import CONFIG as settings
+from app.core.logger.logging_config_helper import get_configured_logger # 导入日志
 
-logger = get_logger(__name__) # 获取Logger实例
+logger = get_configured_logger("pioneer_handler") # 获取Logger实例
 
 router = APIRouter()
 

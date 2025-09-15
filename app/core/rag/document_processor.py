@@ -1,12 +1,12 @@
 from typing import Dict, Any, Optional, List
 from pathlib import Path
 from app.core.milvus import MilvusClient
-from app.config.logger import get_logger
+from app.core.logger.logging_config_helper import get_configured_logger
 from .document_loader import DocumentLoader
 from .document_splitter import DocumentSplitter, ChunkConfig
 from .document_embedder import DocumentEmbedder
 
-logger = get_logger(__name__)
+logger = get_configured_logger("embedding_wrapper")
 
 class DocumentProcessor:
     """文档处理器，整合加载、分块、向量化和存储功能"""

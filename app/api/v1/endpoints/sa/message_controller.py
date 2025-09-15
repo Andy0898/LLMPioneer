@@ -6,12 +6,12 @@ from app.schemas.message import MessageCreate, MessageResponse, MessageUpdate
 from app.services.message_service import MessageService
 from app.services.conversation_service import ConversationService
 from app.services.llm_configuration_service import LlmConfigurationService
-from app.config import settings
+# from app.config import settings
 from app.core.llm import get_llm_response
 from app.db.models.user import UserModel
-from app.config.logger import get_logger # 导入日志
+from app.core.logger.logging_config_helper import get_configured_logger # 导入日志
 
-logger = get_logger(__name__) # 获取Logger实例
+logger = get_configured_logger("pioneer_handler") # 获取Logger实例
 
 router = APIRouter()
 

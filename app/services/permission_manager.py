@@ -3,9 +3,9 @@ from typing import List, Dict, Optional, Set
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.services.role_service import RoleService
 from app.db.models import RoleModel, FunctionPermissionModel
-from app.config.logger import get_logger # 导入日志
+from app.core.logger.logging_config_helper import get_configured_logger # 导入日志
 
-logger = get_logger(__name__) # 获取Logger实例
+logger = get_configured_logger("pioneer_handler") # 获取Logger实例
 
 class PermissionManager:
     """

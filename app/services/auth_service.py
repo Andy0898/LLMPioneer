@@ -7,9 +7,9 @@ from app.core.security import verify_password, get_password_hash, create_access_
 from app.services.role_service import RoleService
 from app.db.models.user import UserModel
 from sqlalchemy.orm import selectinload
-from app.config.logger import get_logger # 导入日志
+from app.core.logger.logging_config_helper import get_configured_logger # 导入日志
 
-logger = get_logger(__name__) # 获取Logger实例
+logger = get_configured_logger("pioneer_handler") # 获取Logger实例
 
 class AuthService:
     def __init__(self, db: AsyncSession):

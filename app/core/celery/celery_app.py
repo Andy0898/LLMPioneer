@@ -1,15 +1,15 @@
 # app/core/celery_app.py
 from celery import Celery
-from app.config.settings import settings
-from app.config.logger import get_logger
+from app.core.config import CONFIG as settings
+from app.core.logger.logging_config_helper import get_configured_logger
 
-logger = get_logger(__name__)
+logger = get_configured_logger("pioneer_handler")
 
 # 创建 Celery 实例
 celery_app = Celery(
     "knowledge_base",
-    broker=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
-    backend=f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}/{settings.REDIS_DB}",
+    broker=f"redis://{settings.redis.host}:{settings.redis.port}/{settings.redis.db}",
+    backend=f"redis://{settings.redis.host}:{settings.redis.port}/{settings.redis.db}",
     include=['app.core.celery.document_task']  # 显式包含任务模块
 )
 

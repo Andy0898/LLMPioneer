@@ -5,9 +5,9 @@ from .celery_app import celery_app
 from app.api.v1.deps import get_db
 from app.db.session import AsyncSessionLocal
 from app.services.document_service import DocumentService
-from app.config.logger import get_logger
+from app.core.logger.logging_config_helper import get_configured_logger
 
-logger = get_logger(__name__)
+logger = get_configured_logger("pioneer_handler")
 
 class DocumentProcessTask(Task):
     """文档处理任务基类"""
