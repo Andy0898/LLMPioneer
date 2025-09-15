@@ -22,6 +22,11 @@ logging:
       default_level: ERROR
       log_file: "aliyun_qwen_llm.log"
 
+    aliyun_embedding:
+      env_var: "ALIYUN_EMBEDDING_LOG_LEVEL"
+      default_level: ERROR
+      log_file: "aliyun_embedding.log"
+      
     azure_openai:
       env_var: "AZURE_OPENAI_LOG_LEVEL"
       default_level: ERROR

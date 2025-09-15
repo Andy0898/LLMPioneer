@@ -16,7 +16,7 @@ from openai import OpenAI
 from core.config import CONFIG
 
 from app.core.logger.logging_config_helper import get_configured_logger, LogLevel
-logger = get_configured_logger("qwen_oai_embedding")
+logger = get_configured_logger("aliyun_embedding")
 
 # Qwen OpenAI embedding API 单次最大支持10条
 QWEN_MAX_BATCH_SIZE = 10
@@ -27,7 +27,7 @@ qwen_openai_client = None
 
 def get_qwen_openai_endpoint():
     """Get the Qwen OpenAI endpoint from configuration."""
-    provider_config = CONFIG.get_embedding_provider("qwen_openai")
+    provider_config = CONFIG.get_embedding_provider("aliyun_qwen_openai")
     if provider_config and provider_config.endpoint:
         endpoint = provider_config.endpoint
         if endpoint:
