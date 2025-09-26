@@ -1,9 +1,10 @@
 from typing import List, Optional, Dict, Any
 from sqlalchemy import select, and_
 from sqlalchemy.ext.asyncio import AsyncSession
-from fastapi import UploadFile
+from fastapi import HTTPException, UploadFile
 import os
 from datetime import datetime
+from app.core.langchain.rag_pipeline import RAGPipeline
 from app.db.models.document_info import DocumentInfo
 from app.db.models.document_settings import DocumentSettings
 from app.schemas.document import DocumentCreate, DocumentUpdate, DocumentSettingsCreate
@@ -191,6 +192,7 @@ class DocumentService:
     ) -> Dict[str, Any]:
         """处理文档并构建知识库"""
         logger.info(f"Starting document processing for document ID: {document_id}.")
+        document = None
         try:
             # 1. 获取文档信息
             stmt = select(DocumentInfo).filter(
@@ -211,35 +213,39 @@ class DocumentService:
                 raise ValueError(f"文档设置未找到: {document_id}")
 
             # 3. 构建分块配置
+            # 假设 overlap 是以整数百分比形式存储的 (例如 20 代表 20%)
+            overlap_ratio = (document_settings.chunking_overlap or 20) / 100.0
             chunk_config = {
-                "mode": document_settings.chunking_type,  # hierarchical, custom, auto
+                "mode": document_settings.chunking_type,
                 "max_size": document_settings.maximum_length,
-                "overlap_ratio": document_settings.chunking_overlap,
+                "overlap_ratio": overlap_ratio,
                 "separators": document_settings.chunk_identifier.split(",") if document_settings.chunk_identifier else None
             }
             logger.debug(f"Chunk configuration for document {document_id}: {chunk_config}.")
 
-            # 4. 创建文档处理器
-            processor = DocumentProcessor(
-                embedding_model="text2vec-base"  # 可以从配置中读取
-            )
-            logger.debug(f"DocumentProcessor initialized for document {document_id}.")
+            # 4. 创建并运行RAG管道
+            # Embedding provider/model 可以将来从配置中读取
+            pipeline = RAGPipeline(splitter_config=chunk_config)
+            
+            document_info = {
+                "id": document.id,
+                "name": document.file_name,
+                "category_id": document.category_id,
+                "user_id": document.create_by
+            }
 
-            # 5. 处理文档
-            # 根据文档创建者判断是部门文档还是个人文档
-            kb_type = "department" if document.category_id else "personal"
-            owner_id = document.category_id if kb_type == "department" else document.create_by
-            logger.info(f"Processing document {document_id} as {kb_type} KB with owner ID: {owner_id}.")
+            # 定义一个简单的进度回调函数用于日志记录
+            async def progress_logger(status: str, progress: float):
+                logger.info(f"Doc {document_id} processing status: {status} ({progress*100:.0f}%)")
+                # 在这里可以添加将进度发送到前端的逻辑 (例如, WebSocket)
 
-            result = await processor.process(
+            result = await pipeline.process_and_store_file(
                 file_path=document.file_url,
-                kb_type=kb_type,
-                owner_id=owner_id,
-                document_id=document_id,
-                chunk_config=chunk_config
+                document_info=document_info,
+                progress_callback=progress_logger
             )
 
-            # 6. 更新文档状态
+            # 5. 更新文档状态
             document.status = 1  # 处理完成
             await db.commit()
 

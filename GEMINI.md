@@ -20,11 +20,13 @@ The LLM Pioneer project is an intelligent assistant system built with Python 3.1
 The project follows a layered architecture, with clear separation of concerns:
 
 *   `app/api`: Handles routing and API endpoints.
-*   `app/core`: Contains core logic, including LLM integration, security, and background tasks (Celery).
-*   `app/db`: Manages database interactions, including models and repositories.
-*   `app/schemas`: Defines data models for API requests and responses.
+*   `app/core`: Contains core logic, including a provider-based design for LLM integration (`llm_providers`), embeddings (`embedding_providers`), and retrieval (`retrieval_providers`). It also includes the RAG pipeline, security, background tasks (`celery`), and logging.
+*   `app/db`: Manages database interactions, including SQLAlchemy models (`models`) and repositories.
+*   `app/schemas`: Defines Pydantic data models for API requests and responses.
 *   `app/services`: Implements business logic.
-*   `app/utils`: Provides utility functions.
+*   `app/utils`: Provides miscellaneous utility functions and testing scripts.
+*   `config/`: Manages application configuration through YAML files (e.g., `config_llm.yaml`, `config_embedding.yaml`) and stores other resources like prompts and templates.
+*   `scripts/`: Contains command-line scripts for tasks like database initialization (`init_admin.py`).
 
 ## Building and Running
 
@@ -52,14 +54,10 @@ The project follows a layered architecture, with clear separation of concerns:
         .\venv\Scripts\activate
         ```
 3.  **Install dependencies:**
-    *   For development:
-        ```bash
-        pip install -r requirements/dev.txt
-        ```
-    *   For production:
-        ```bash
-        pip install -r requirements/prod.txt
-        ```
+    ```bash
+    # This file references dependencies in the `dependence/` directory.
+    pip install -r requirements.txt
+    ```
 4.  **Configure environment variables:**
     ```bash
     cp .env.example .env
@@ -96,8 +94,8 @@ pytest
 
 *   **Language:** Python 3.10
 *   **Frameworks:** FastAPI for API development, SQLAlchemy for ORM.
-*   **Code Structure:** Follows a modular structure with clear separation of concerns (API, services, database, core logic).
+*   **Code Structure:** Follows a modular structure with clear separation of concerns.
 *   **Testing:** Unit and integration tests are written using `pytest`.
-*   **Configuration:** Environment variables are managed via `.env` files.
-*   **Logging:** Configured in `app/config/logger.py`.
+*   **Configuration:** Environment variables are managed via `.env` files, with detailed settings in the YAML files within the root `config/` directory.
+*   **Logging:** Configured in `app/core/logger/logger.py`.
 *   **Security:** JWT-based authentication is implemented.

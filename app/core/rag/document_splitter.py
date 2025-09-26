@@ -1,13 +1,13 @@
 from typing import List, Dict, Any
 from dataclasses import dataclass
-from app.core.logger.logging_config_helper import get_configured_logger
+
 from langchain.text_splitter import (
     RecursiveCharacterTextSplitter,
     MarkdownHeaderTextSplitter,
     HTMLHeaderTextSplitter
 )
 from langchain.schema import Document
-
+from app.core.logger.logging_config_helper import get_configured_logger
 logger = get_configured_logger("embedding_wrapper")
 
 @dataclass
