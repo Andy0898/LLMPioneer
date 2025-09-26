@@ -2,6 +2,9 @@ from typing import Optional, List, Dict, Any
 from pydantic import BaseModel
 from datetime import datetime
 
+# Import message schemas for conversation response
+from app.schemas.message import MessageResponse
+
 # 会话基础模型
 class ConversationBase(BaseModel):
     title: str = "新对话"
@@ -29,8 +32,19 @@ class ConversationInDB(ConversationBase):
 
 class ConversationResponse(ConversationInDB):
     initial_response: Optional[Dict[str, Any]] = None
+    messages: Optional[List[MessageResponse]] = None
 
 # 会话列表响应模型
 class ConversationList(BaseModel):
     total: int
     items: List[ConversationResponse] 
+
+# 发送消息请求模型
+class SendMessageRequest(BaseModel):
+    question: str
+    llm_id: int
+
+# 发送消息响应模型
+class SendMessageResponse(BaseModel):
+    message: MessageResponse
+    conversation: ConversationResponse 

@@ -10,7 +10,7 @@ Backwards compatibility is not guaranteed at this time.
 """
 
 from typing import Optional, Dict, Any
-from core.config import CONFIG
+from app.core.config import CONFIG
 import asyncio
 import threading
 import subprocess
@@ -191,14 +191,13 @@ async def ask_llm(
     
     # In development mode, allow query param override
     if CONFIG.is_development_mode() and query_params:
-        from core.utils.utils import get_param
-        override_provider = get_param(query_params, "llm_provider", str, None)
+        override_provider = query_params.get("llm_provider")
         if override_provider:
             provider_name = override_provider
             logger.debug(f"Development mode: LLM provider overridden to {provider_name}")
         
         # Also allow level override in development mode
-        override_level = get_param(query_params, "llm_level", str, None)
+        override_level = query_params.get("llm_level")
         if override_level:
             level = override_level
             logger.debug(f"Development mode: LLM level overridden to {level}")
@@ -269,6 +268,78 @@ async def ask_llm(
         )
 
         return {}
+
+
+async def get_llm_response(
+    question: str,
+    history_messages: list,
+    llm_config,
+    max_tokens: int = 512
+) -> Dict[str, Any]:
+    """
+    Get LLM response with conversation context.
+    
+    Args:
+        question: User's question
+        history_messages: List of previous messages in conversation
+        llm_config: LLM configuration object
+        max_tokens: Maximum tokens for response
+        
+    Returns:
+        Dict containing 'content' and optionally 'reasoning_content'
+    """
+    try:
+        # Build conversation context
+        conversation_history = []
+        
+        # Add system prompt
+        system_prompt = "You are a professional AI assistant. Please provide accurate and helpful responses based on the user's questions and context."
+        
+        # Add historical messages in chronological order
+        for msg in reversed(history_messages[-10:]):  # Use last 10 messages for context
+            conversation_history.append(f"User: {msg.question}")
+            if msg.content:
+                conversation_history.append(f"Assistant: {msg.content}")
+        
+        # Build the final prompt
+        context = "\n".join(conversation_history) if conversation_history else ""
+        full_prompt = f"{system_prompt}\n\nConversation History:\n{context}\n\nCurrent Question: {question}\n\nPlease provide a helpful response:"
+        
+        # Simple schema for text response
+        schema = {
+            "type": "object",
+            "properties": {
+                "content": {"type": "string", "description": "The main response content"},
+                "reasoning_content": {"type": "string", "description": "Optional reasoning or thought process"}
+            },
+            "required": ["content"]
+        }
+        
+        # Call the LLM
+        response = await ask_llm(
+            prompt=full_prompt,
+            schema=schema,
+            max_length=max_tokens
+        )
+        
+        if response and "content" in response:
+            return {
+                "content": response["content"],
+                "reasoning_content": response.get("reasoning_content")
+            }
+        else:
+            # Fallback response
+            return {
+                "content": "I apologize, but I'm unable to generate a response at the moment. Please try again.",
+                "reasoning_content": None
+            }
+            
+    except Exception as e:
+        logger.error(f"Error in get_llm_response: {str(e)}")
+        return {
+            "content": f"An error occurred while generating the response: {str(e)}",
+            "reasoning_content": None
+        }
 
 
 def get_available_providers() -> list:

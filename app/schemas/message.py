@@ -13,6 +13,7 @@ class MessageCreate(MessageBase):
     create_by: Optional[str] = None
 
 class MessageUpdate(BaseModel):
+    question: Optional[str] = None
     content: Optional[str] = None
     reasoning_content: Optional[str] = None
     update_by: Optional[str] = None

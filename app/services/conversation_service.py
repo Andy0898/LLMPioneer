@@ -59,7 +59,7 @@ class ConversationService:
         )
         conversations = result.scalars().all()
         logger.debug(f"Returned {len(conversations)} conversations for user {user_id}.")
-        return conversations
+        return list(conversations)
 
     @staticmethod
     async def get_total(db: AsyncSession, user_id: int) -> int:
@@ -71,3 +71,28 @@ class ConversationService:
         total = len(result.scalars().all())
         logger.debug(f"Total conversations for user {user_id}: {total}.")
         return total 
+
+    @staticmethod
+    async def delete(db: AsyncSession, id: int) -> bool:
+        """
+        Delete a conversation and its related messages (cascade delete).
+        
+        Args:
+            db: Database session
+            id: Conversation ID to delete
+            
+        Returns:
+            Boolean indicating success
+        """
+        logger.info(f"Deleting conversation {id} and its messages.")
+        conversation = await ConversationService.get(db=db, id=id)
+        if not conversation:
+            logger.warning(f"Conversation {id} not found for deletion.")
+            return False
+            
+        # The cascade delete is handled at the database level via the relationship
+        # defined in the ConversationModel (cascade="all, delete-orphan")
+        await db.delete(conversation)
+        await db.commit()
+        logger.info(f"Conversation {id} and its messages deleted successfully.")
+        return True 
