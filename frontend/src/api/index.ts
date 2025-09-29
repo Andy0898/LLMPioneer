@@ -1,0 +1,10 @@
+// Re-export all API services for easier imports
+export { authApi } from './auth'
+export { conversationApi } from './conversation'
+export { chatApi } from './chat'
+export { knowledgeApi } from './knowledge'
+export { userApi, roleApi, permissionApi } from './user'
+export { systemApi } from './system'
+export { writingApi } from './writing'
+export { api, uploadWithProgress, downloadFile } from './client'
+export type { ApiResponse, PaginatedResponse, ErrorResponse } from './client'

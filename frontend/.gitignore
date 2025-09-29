@@ -1,0 +1,195 @@
+# ================================
+# Frontend Specific .gitignore
+# ================================
+# Note: Root .gitignore covers common patterns
+# This file focuses on frontend-only specifics
+
+# ================================
+# VUE.JS SPECIFIC
+# ================================
+
+# Build outputs
+dist/
+build/
+.output/
+
+# Dependencies (local to frontend)
+node_modules/
+
+# Environment files (frontend specific)
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# ================================
+# VITE SPECIFIC
+# ================================
+
+# Vite cache
+.vite/
+node_modules/.vite/
+
+# Vite build info
+vite.config.*.timestamp-*
+
+# ================================
+# PACKAGE MANAGER
+# ================================
+
+# npm
+npm-debug.log*
+.npm
+
+# Yarn
+yarn-debug.log*
+yarn-error.log*
+.yarn-integrity
+.yarn/
+
+# pnpm
+pnpm-debug.log*
+.pnpm-store/
+
+# ================================
+# TESTING & COVERAGE
+# ================================
+
+# Unit test coverage
+coverage/
+*.lcov
+.nyc_output
+
+# E2E testing
+# Cypress
+cypress/downloads/
+cypress/screenshots/
+cypress/videos/
+cypress/fixtures/generated/
+
+# Playwright
+test-results/
+playwright-report/
+playwright/.cache/
+
+# ================================
+# DEVELOPMENT TOOLS
+# ================================
+
+# TypeScript
+*.tsbuildinfo
+.tscache/
+
+# ESLint
+.eslintcache
+
+# Prettier
+.prettiercache
+
+# StyleLint
+.stylelintcache
+
+# ================================
+# BUNDLER SPECIFIC
+# ================================
+
+# Webpack
+.webpack/
+
+# Parcel
+.parcel-cache/
+.cache/
+
+# Rollup
+.rollup.cache/
+
+# ================================
+# STORYBOOK
+# ================================
+.storybook-out/
+.out/
+storybook-static/
+
+# ================================
+# HOT RELOAD & DEV
+# ================================
+
+# Hot reload
+.hot-update.*
+
+# Dev server
+.vite-ssg-temp
+
+# ================================
+# TEMPORARY FILES
+# ================================
+
+# Auto-generated files
+src/auto-imports.d.ts
+src/components.d.ts
+
+# Temporary folders
+tmp/
+temp/
+
+# ================================
+# OS & EDITOR (Frontend Context)
+# ================================
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Linux
+*~
+
+# Editor files
+*.swp
+*.swo
+*.sw?
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+
+# ================================
+# DEPLOYMENT
+# ================================
+
+# Vercel
+.vercel
+
+# Netlify
+.netlify/
+
+# Firebase
+.firebase/
+firebase-debug.log*
+
+# Surge
+SURGE_LOGIN
+
+# ================================
+# ANALYTICS & MONITORING
+# ================================
+
+# Bundle analyzer
+bundle-report.html
+stats.json
+
+# Lighthouse
+lighthouse-report.html
+
+# ================================
+# FRONTEND SPECIFIC LOGS
+# ================================
+
+# Runtime logs specific to frontend
+runtime-logs/
+console-logs/
+
+# Debug logs
+debug.log
+error.log

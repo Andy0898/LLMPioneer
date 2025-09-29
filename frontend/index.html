@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM Pioneer</title>
+  </head>
+  <body>
+    <div id="app">
+      <div style="padding: 20px; text-align: center; font-family: Arial, sans-serif;">
+        <h1>Loading...</h1>
+        <p>If this message persists, there may be a JavaScript error.</p>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
+    <script>
+      // Debug script to check if main.ts loads
+      console.log('HTML loaded successfully');
+      setTimeout(function() {
+        if (document.getElementById('app').innerHTML.includes('Loading...')) {
+          console.error('Vue app failed to mount - check main.ts');
+          document.getElementById('app').innerHTML = '<div style="padding: 20px; text-align: center; color: red;"><h1>Error: Vue App Failed to Load</h1><p>Check browser console for details</p></div>';
+        }
+      }, 3000);
+    </script>
+  </body>
+</html>
